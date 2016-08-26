@@ -41,8 +41,6 @@
 
 @property (strong, nonatomic) NSMutableDictionary *titleLayerDictionary;
 
-@property (nonatomic) CGFloat lastContentOffset;
-
 @end
 
 @implementation HMScrollView
@@ -990,7 +988,7 @@
     CGSize screenSize = CGSizeMake(self.relatedPageWidth, [UIScreen mainScreen].bounds.size.height);//self.size;//[UIScreen mainScreen].bounds.size;
     
     // 实现本页标题颜色渐淡效果，下页渐现效果
-    NSInteger curPageIndex = (int)contentOffsetX / screenSize.width;//[Utils getScreenWidth];
+    NSInteger curPageIndex = self.selectedSegmentIndex;
     
     // 判断是向右还是向左
     NSInteger destPageIndex = contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
@@ -998,30 +996,63 @@
         return;
     }
     
+    CGFloat depth = fabs((contentOffsetX - screenSize.width * curPageIndex) / screenSize.width);
+    
     CGRect currentPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
     CGRect destinationPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
-    CGFloat percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
-    CGFloat nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
-    CGFloat nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
+
+    CGFloat startX = 0;
+    CGFloat endX = 0;
     
-    if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
-        [self setArrowFrameWithFrame:CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height)];
-    } else {
-        self.selectionIndicatorStripLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
-        if (self.selectionStyle == HMSegmentedControlSelectionStyleBox) {
-            currentPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
-            destinationPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
-            percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
-            nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
-            nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
-            
-            self.selectionIndicatorBoxLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
+    void (^calculateStartXAndEndXBlock)(CGRect currentPageRect, CGRect destinationPageRect, CGFloat *theStartX, CGFloat *theEndX) = ^(CGRect currentPageRect, CGRect destinationPageRect, CGFloat *theStartX, CGFloat *theEndX){
+        CGFloat startX = 0;
+        CGFloat endX = 0;
+        if (destPageIndex < curPageIndex) {  //left-- 橙条滚动方向
+            if (depth < 0.5) {
+                startX = currentPageRect.origin.x + ([self centerOfRect:destinationPageRect].x - currentPageRect.origin.x) * (depth / 0.5);
+                endX = [self rightBottomOfRect:currentPageRect].x + ([self centerOfRect:currentPageRect].x - [self rightBottomOfRect:currentPageRect].x) * (depth / 0.5);
+            }else{
+                startX = [self centerOfRect:destinationPageRect].x + (destinationPageRect.origin.x - [self centerOfRect:destinationPageRect].x) * (depth - 0.5) / 0.5;
+                endX = [self centerOfRect:currentPageRect].x + ([self rightBottomOfRect:destinationPageRect].x - [self centerOfRect:currentPageRect].x) * ((depth - 0.5) / 0.5);
+            }
+        } else { //right
+            if (depth < 0.5) {
+                startX = currentPageRect.origin.x + ([self centerOfRect:currentPageRect].x - currentPageRect.origin.x) * (depth / 0.5);
+                endX = [self rightBottomOfRect:currentPageRect].x + ([self centerOfRect:destinationPageRect].x - [self rightBottomOfRect:currentPageRect].x) * (depth / 0.5);
+            }else{
+                startX = [self centerOfRect:currentPageRect].x + (destinationPageRect.origin.x - [self centerOfRect:currentPageRect].x) * ((depth - 0.5) / 0.5);
+                endX = [self centerOfRect:destinationPageRect].x + ([self rightBottomOfRect:destinationPageRect].x - [self centerOfRect:destinationPageRect].x) * ((depth - 0.5) / 0.5);
+            }
         }
+        *theStartX = startX;
+        *theEndX = endX;
+    };
+    calculateStartXAndEndXBlock(currentPageRect, destinationPageRect, &startX, &endX);
+    
+    if (endX > startX) {
+        CGRect nowFrame = CGRectMake(startX, destinationPageRect.origin.y, endX - startX, destinationPageRect.size.height);
+        if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
+            CGFloat depthWithSign = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
+            CGFloat nowRectX = currentPageRect.origin.x + depthWithSign * fabs(destinationPageRect.origin.x - currentPageRect.origin.x);
+            [self setArrowFrameWithFrame:CGRectMake(nowRectX, destinationPageRect.origin.y, destinationPageRect.size.width, destinationPageRect.size.height)];            
+        } else {
+            self.selectionIndicatorStripLayer.frame = nowFrame;
+            if (self.selectionStyle == HMSegmentedControlSelectionStyleBox) {
+                currentPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
+                destinationPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
+                
+                calculateStartXAndEndXBlock(currentPageRect, destinationPageRect, &startX, &endX);
+                nowFrame = CGRectMake(startX, destinationPageRect.origin.y, endX - startX, destinationPageRect.size.height);
+                self.selectionIndicatorBoxLayer.frame = nowFrame;
+            }
+        }
+    } else {
+        NSLog(@"Should never run to here");
     }
+    
     
     if (self.type == HMSegmentedControlTypeText || self.type == HMSegmentedControlTypeTextImages) {
         // current title: selected color -> normal color
-        CGFloat depth = fabs(percentToDestination);
         CGFloat r = (_selectedRed + (_normalRed - _selectedRed) * depth);
         CGFloat g = (_selectedGreen + (_normalGreen - _selectedGreen) * depth);
         CGFloat b = (_selectedBlue + (_normalBlue - _selectedBlue) * depth);
@@ -1050,11 +1081,17 @@
                        };
         destinationTextLayer.string = [[NSAttributedString alloc] initWithString:destinationTitle attributes:titleAttrs];
     }
-    
-    _lastContentOffset = contentOffsetX;
 }
 
 #pragma mark - Helper
+
+- (CGPoint)centerOfRect:(CGRect)rect {
+    return CGPointMake(rect.origin.x + rect.size.width / 2, rect.origin.y + rect.size.height / 2);
+}
+
+- (CGPoint)rightBottomOfRect:(CGRect)rect {
+    return CGPointMake(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height);
+}
 
 + (CGFloat)getScreenWidth{
     // modified by tencent:jiachunke(20150827)

@@ -83,7 +83,7 @@
     
     // Tying up the segmented control to a scroll view
     self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 50)];
-    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注"];
+    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门1", @"发现1", @"关注1"];
     self.segmentedControl4.selectedSegmentIndex = 1;
     self.segmentedControl4.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0 blue:0 alpha:1],NSFontAttributeName : [UIFont systemFontOfSize:17]};
@@ -105,7 +105,7 @@
     self.scrollView.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.scrollView.pagingEnabled = YES;
     self.scrollView.showsHorizontalScrollIndicator = NO;
-    self.scrollView.contentSize = CGSizeMake(viewWidth * 3, 200);
+    self.scrollView.contentSize = CGSizeMake(viewWidth * 6, 200);
     self.scrollView.delegate = self;
     [self.scrollView scrollRectToVisible:CGRectMake(viewWidth, 0, viewWidth, 200) animated:NO];
     [self.view addSubview:self.scrollView];
@@ -114,20 +114,13 @@
     self.segmentedControl4.shouldAnimateDurringUserScrollTheRelatedScrollView = YES;
     self.segmentedControl4.relatedScrollView = self.scrollView;
     
-    UILabel *label1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, viewWidth, 210)];
-    [self setApperanceForLabel:label1];
-    label1.text = @"热门";
-    [self.scrollView addSubview:label1];
-    
-    UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(viewWidth, 0, viewWidth, 210)];
-    [self setApperanceForLabel:label2];
-    label2.text = @"发现";
-    [self.scrollView addSubview:label2];
-    
-    UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(viewWidth * 2, 0, viewWidth, 210)];
-    [self setApperanceForLabel:label3];
-    label3.text = @"关注";
-    [self.scrollView addSubview:label3];
+    for (NSInteger index = 0; index < self.segmentedControl4.sectionTitles.count; ++index) {
+        NSString *title = self.segmentedControl4.sectionTitles[index];
+        UILabel *label1 = [[UILabel alloc] initWithFrame:CGRectMake(viewWidth * index, 0, viewWidth, 210)];
+        [self setApperanceForLabel:label1];
+        label1.text = title;
+        [self.scrollView addSubview:label1];
+    }
     
     [self.scrollView.panGestureRecognizer addTarget:self action:@selector(scrollViewGestureRecognizerAction:)];
 }
