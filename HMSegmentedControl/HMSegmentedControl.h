@@ -235,6 +235,11 @@ typedef enum {
  */
 @property (nonatomic, weak) UIScrollView *relatedScrollView;
 
+/**
+ Default is NO. Set to YES if you want select effect for single segment
+ */
+@property (nonatomic) BOOL enableSelectEffectForSingleSegment;
+
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;

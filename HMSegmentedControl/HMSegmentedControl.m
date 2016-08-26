@@ -13,7 +13,10 @@
 @interface HMScrollView : UIScrollView
 @end
 
-@interface HMSegmentedControl ()
+@interface HMSegmentedControl () {
+    NSDictionary *_selectedTitleTextAttributes;
+    HMSegmentedControlSelectionIndicatorLocation _selectionIndicatorLocation;
+}
 
 @property (nonatomic, strong) CALayer *selectionIndicatorStripLayer;
 @property (nonatomic, strong) CALayer *selectionIndicatorBoxLayer;
@@ -187,6 +190,8 @@
     self.contentMode = UIViewContentModeRedraw;
     
     _relatedPageWidth = [[self class] getScreenWidth];
+    
+    _enableSelectEffectForSingleSegment = NO;
 }
 
 - (void)layoutSubviews {
@@ -219,6 +224,22 @@
 	if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
 		self.selectionIndicatorHeight = 0.0f;
 	}
+}
+
+- (HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
+    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+        return HMSegmentedControlSelectionIndicatorLocationNone;
+    } else {
+        return _selectionIndicatorLocation;
+    }
+}
+
+- (CGFloat)selectionIndicatorHeight {
+    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+        return 0.0f;
+    } else {
+        return _selectionIndicatorHeight;
+    }
 }
 
 - (void)setSelectionIndicatorBoxOpacity:(CGFloat)selectionIndicatorBoxOpacity {
@@ -949,6 +970,14 @@
     [color getRed:&_selectedRed green:&_selectedGreen blue:&_selectedBlue alpha:&_selectedAlpha];
 }
 
+- (NSDictionary *)selectedTitleTextAttributes {
+    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+        return _titleTextAttributes;
+    } else {
+        return _selectedTitleTextAttributes;
+    }
+}
+
 - (NSMutableDictionary *)titleLayerDictionary {
     if (!_titleLayerDictionary) {
         _titleLayerDictionary = [[NSMutableDictionary alloc] init];
@@ -1068,6 +1097,12 @@
         screenWidth = fmin(screenSize.width, screenSize.height);
     }
     return screenWidth;
+}
+
+- (void)checkSingleSegment {
+    _selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationNone;
+    _selectionIndicatorHeight = 0.0f;
+    _selectedTitleTextAttributes = _titleTextAttributes;
 }
 
 @end
