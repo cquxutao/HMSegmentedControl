@@ -219,11 +219,32 @@ typedef enum {
  */
 @property (nonatomic) BOOL shouldAnimateUserSelection;
 
+/**
+ Defaul is NO. Set to YES if want the indicator animate when scroll the related scroll view.
+ If set to YES. You must set the relatedScrollView property and call relatedScrollViewDidScroll: method when the releated UIScrollView scroll
+ */
+@property (nonatomic) BOOL shouldAnimateDurringUserScrollTheRelatedScrollView;
+
+/**
+ The width of related page. Default is equal to the UIScreen's bound's width
+ */
+@property (nonatomic, assign) CGFloat relatedPageWidth;
+
+/**
+ The related UIScrollView.
+ */
+@property (nonatomic, weak) UIScrollView *relatedScrollView;
+
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated;
 - (void)setIndexChangeBlock:(IndexChangeBlock)indexChangeBlock;
 - (void)setTitleFormatter:(HMTitleFormatterBlock)titleFormatter;
+
+/**
+ Call this when the related UIScrollView did scroll.
+ */
+- (void)relatedScrollViewDidScroll:(UIScrollView *)scrollView;
 
 @end

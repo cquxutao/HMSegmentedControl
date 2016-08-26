@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) HMSegmentedControl *segmentedControl4;
+@property (nonatomic) CGPoint beginLocation;
 
 @end
 
@@ -82,13 +83,14 @@
     
     // Tying up the segmented control to a scroll view
     self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 50)];
-    self.segmentedControl4.sectionTitles = @[@"Worldwide", @"Local", @"Headlines"];
+    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注"];
     self.segmentedControl4.selectedSegmentIndex = 1;
     self.segmentedControl4.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
-    self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
-    self.segmentedControl4.selectedTitleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:1]};
-    self.segmentedControl4.selectionIndicatorColor = [UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1];
-    self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleBox;
+    self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0 blue:0 alpha:1],NSFontAttributeName : [UIFont systemFontOfSize:17]};
+    UIColor *selectedColor = [UIColor colorWithRed:255. / 255. green:148. / 255. blue:49. / 255. alpha:1];
+    self.segmentedControl4.selectedTitleTextAttributes = @{NSForegroundColorAttributeName : selectedColor,NSFontAttributeName : [UIFont systemFontOfSize:17]};
+    self.segmentedControl4.selectionIndicatorColor = selectedColor;
+    self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
     self.segmentedControl4.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationUp;
     self.segmentedControl4.tag = 3;
     
@@ -108,20 +110,26 @@
     [self.scrollView scrollRectToVisible:CGRectMake(viewWidth, 0, viewWidth, 200) animated:NO];
     [self.view addSubview:self.scrollView];
     
+    
+    self.segmentedControl4.shouldAnimateDurringUserScrollTheRelatedScrollView = YES;
+    self.segmentedControl4.relatedScrollView = self.scrollView;
+    
     UILabel *label1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, viewWidth, 210)];
     [self setApperanceForLabel:label1];
-    label1.text = @"Worldwide";
+    label1.text = @"热门";
     [self.scrollView addSubview:label1];
     
     UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(viewWidth, 0, viewWidth, 210)];
     [self setApperanceForLabel:label2];
-    label2.text = @"Local";
+    label2.text = @"发现";
     [self.scrollView addSubview:label2];
     
     UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(viewWidth * 2, 0, viewWidth, 210)];
     [self setApperanceForLabel:label3];
-    label3.text = @"Headlines";
+    label3.text = @"关注";
     [self.scrollView addSubview:label3];
+    
+    [self.scrollView.panGestureRecognizer addTarget:self action:@selector(scrollViewGestureRecognizerAction:)];
 }
 
 - (void)setApperanceForLabel:(UILabel *)label {
@@ -136,14 +144,61 @@
 }
 
 - (void)segmentedControlChangedValue:(HMSegmentedControl *)segmentedControl {
-	NSLog(@"Selected index %ld (via UIControlEventValueChanged)", (long)segmentedControl.selectedSegmentIndex);
+    NSLog(@"Selected index %ld (via UIControlEventValueChanged)", (long)segmentedControl.selectedSegmentIndex);
 }
 
 - (void)uisegmentedControlChangedValue:(UISegmentedControl *)segmentedControl {
-	NSLog(@"Selected index %ld", (long)segmentedControl.selectedSegmentIndex);
+    NSLog(@"Selected index %ld", (long)segmentedControl.selectedSegmentIndex);
+}
+
+- (void)scrollViewGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
+    //    UIGestureRecognizerStateBegan,      // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop
+    //    UIGestureRecognizerStateChanged,    // the recognizer has received touches recognized as a change to the gesture. the action method will be called at the next turn of the run loop
+    //    UIGestureRecognizerStateEnded,      // the recognizer has received touches recognized as the end of the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
+    //    UIGestureRecognizerStateCancelled,  // t
+//    
+//    CGPoint location = [gestureRecognizer locationInView:gestureRecognizer.view];
+//    //    NSLog(@"location:(%.4f, %.4f)", location.x, location.y);
+//    switch (gestureRecognizer.state) {
+//        case UIGestureRecognizerStateBegan: {
+//            self.beginLocation = location;
+//            NSLog(@"begin location:(%.4f, %.4f)", location.x, location.y);
+//            break;
+//        }
+//        case UIGestureRecognizerStateChanged: {
+//            CGPoint changeLocation = CGPointMake(location.x - self.beginLocation.x, location.y - self.beginLocation.y);
+//            NSLog(@"change location:(%.4f, %.4f)", changeLocation.x, changeLocation.y);
+//            break;
+//        }
+//        case UIGestureRecognizerStateEnded:
+//        case UIGestureRecognizerStateCancelled: {
+//            break;
+//        }
+//        default:
+//            break;
+//    }
 }
 
 #pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    NSLog(@"offset: %.4f", scrollView.contentOffset.x);
+    [self.segmentedControl4 relatedScrollViewDidScroll:scrollView];
+}
+
+// called on start of dragging (may require some time and or distance to move)
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    
+}
+
+// called on finger up if the user dragged. velocity is in points/millisecond. targetContentOffset may be changed to adjust where the scroll view comes to rest
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
+    
+}
+// called on finger up if the user dragged. decelerate is true if it will continue moving afterwards
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    
+}
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     CGFloat pageWidth = scrollView.frame.size.width;
