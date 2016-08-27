@@ -87,7 +87,7 @@
     self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门22", @"发现22", @"关注22", @"热门33", @"发现33", @"关注33"];
 //    self.segmentedControl4.sectionTitles = @[@"人气周榜", @"点赞周榜", @"粉丝贡献"];
 //    self.segmentedControl4.sectionTitles = @[@"热门发现"];
-    self.segmentedControl4.selectedSegmentIndex = 0; //self.segmentedControl4.sectionTitles.count / 2;
+    self.segmentedControl4.selectedSegmentIndex = self.segmentedControl4.sectionTitles.count / 2;
     self.segmentedControl4.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0 blue:0 alpha:1],NSFontAttributeName : [UIFont systemFontOfSize:17]};
     UIColor *selectedColor = [UIColor colorWithRed:255. / 255. green:148. / 255. blue:49. / 255. alpha:1];
@@ -112,7 +112,7 @@
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.contentSize = CGSizeMake(viewWidth * self.segmentedControl4.sectionTitles.count, 200);
     self.scrollView.delegate = self;
-    [self.scrollView scrollRectToVisible:CGRectMake(viewWidth, 0, viewWidth, 200) animated:NO];
+    [self.scrollView scrollRectToVisible:CGRectMake(viewWidth * self.segmentedControl4.selectedSegmentIndex, 0, viewWidth, 200) animated:NO];
     [self.view addSubview:self.scrollView];
     
     
