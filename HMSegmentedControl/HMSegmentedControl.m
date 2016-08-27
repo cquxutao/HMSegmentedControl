@@ -15,7 +15,6 @@
 
 @interface HMSegmentedControl () {
     NSDictionary *_selectedTitleTextAttributes;
-    HMSegmentedControlSelectionIndicatorLocation _selectionIndicatorLocation;
 }
 
 @property (nonatomic, strong) CALayer *selectionIndicatorStripLayer;
@@ -219,28 +218,12 @@
     [self setNeedsLayout];
 }
 
-- (void)setSelectionIndicatorLocation:(HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
-	_selectionIndicatorLocation = selectionIndicatorLocation;
-	
-	if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
-		self.selectionIndicatorHeight = 0.0f;
-	}
-}
-
-- (HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
-    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
-        return HMSegmentedControlSelectionIndicatorLocationNone;
-    } else {
-        return _selectionIndicatorLocation;
-    }
-}
-
 - (CGFloat)selectionIndicatorHeight {
-    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
-        return 0.0f;
-    } else {
+//    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+//        return 0.0f;
+//    } else {
         return _selectionIndicatorHeight;
-    }
+//    }
 }
 
 - (void)setSelectionIndicatorBoxOpacity:(CGFloat)selectionIndicatorBoxOpacity {
@@ -507,6 +490,10 @@
 	}
     
     // Add the selection indicators
+    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+      return;
+    }
+  
     if (self.selectedSegmentIndex != HMSegmentedControlNoSegment) {
         if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
             if (!self.selectionIndicatorArrowLayer.superlayer) {
@@ -1125,12 +1112,6 @@
         screenWidth = fmin(screenSize.width, screenSize.height);
     }
     return screenWidth;
-}
-
-- (void)checkSingleSegment {
-    _selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationNone;
-    _selectionIndicatorHeight = 0.0f;
-    _selectedTitleTextAttributes = _titleTextAttributes;
 }
 
 @end
