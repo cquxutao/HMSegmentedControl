@@ -192,6 +192,7 @@
     _relatedPageWidth = [[self class] getScreenWidth];
     
     _enableSelectEffectForSingleSegment = NO;
+    _centerWhenNesseary = YES;
 }
 
 - (void)layoutSubviews {
@@ -354,7 +355,18 @@
                     xOffset = xOffset + [width floatValue];
                     i++;
                 }
-                
+
+                if (self.centerWhenNesseary) {
+                  CGFloat totalWidth = 0.0f;
+                  for (NSNumber *width in self.segmentWidthsArray) {
+                    totalWidth += [width floatValue];
+                  }
+                  if (totalWidth < self.frame.size.width) {
+                    CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
+                    xOffset += totalLeftMargin;
+                  }
+                }
+              
                 CGFloat widthForIndex = [[self.segmentWidthsArray objectAtIndex:idx] floatValue];
                 rect = CGRectMake(xOffset, y, widthForIndex, stringHeight);
                 fullRect = CGRectMake(self.segmentWidth * idx, 0, widthForIndex, oldRect.size.height);
@@ -644,7 +656,23 @@
                     selectedSegmentOffset = selectedSegmentOffset + [width floatValue];
                     i++;
                 }
-                return CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom);
+                
+                if (self.centerWhenNesseary) {
+                  CGFloat totalWidth = [self totalSegmentedControlWidth];
+                  if (totalWidth < self.frame.size.width) {
+                    CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
+                    selectedSegmentOffset += totalLeftMargin;
+                  }
+                }
+                
+                CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom);
+               
+                if (self.centerWhenNesseary) {
+                  rect.origin.x += (rect.size.width - sectionWidth) / 2;
+                  rect.size.width = sectionWidth;
+                }
+                
+                return rect;
             }
             
             return CGRectMake((self.segmentWidth + self.selectionIndicatorEdgeInsets.left) * selectedSegmentIndex, indicatorYOffset, self.segmentWidth - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);

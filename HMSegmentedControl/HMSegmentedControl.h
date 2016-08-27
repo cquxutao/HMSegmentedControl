@@ -240,6 +240,12 @@ typedef enum {
  */
 @property (nonatomic) BOOL enableSelectEffectForSingleSegment;
 
+/**
+ When the total width of all section is smaller than the self.frame.size.width.
+ Default is YES. Set to NO if you don't want this effect.
+ */
+@property (nonatomic) BOOL centerWhenNesseary;
+
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;
