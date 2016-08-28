@@ -192,6 +192,7 @@
     
     _enableSelectEffectForSingleSegment = NO;
     _centerWhenNesseary = YES;
+    _makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments = YES;
 }
 
 - (void)layoutSubviews {
@@ -338,12 +339,15 @@
                     xOffset = xOffset + [width floatValue];
                     i++;
                 }
-
-                if (self.centerWhenNesseary) {
-                  CGFloat totalWidth = 0.0f;
-                  for (NSNumber *width in self.segmentWidthsArray) {
-                    totalWidth += [width floatValue];
-                  }
+                CGFloat totalWidth = [self totalSegmentedControlWidth];
+                if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                    CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+                    if (idx == 0) {
+                      xOffset = horizonSpace;
+                    } else if (idx == 1) {
+                      xOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
+                    }
+                } else if (self.centerWhenNesseary) {
                   if (totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     xOffset += totalLeftMargin;
@@ -643,18 +647,23 @@
                     selectedSegmentOffset = selectedSegmentOffset + [width floatValue];
                     i++;
                 }
-                
-                if (self.centerWhenNesseary) {
-                  CGFloat totalWidth = [self totalSegmentedControlWidth];
-                  if (totalWidth < self.frame.size.width) {
+              
+                CGFloat totalWidth = [self totalSegmentedControlWidth];
+                if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                    CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+                    if (selectedSegmentIndex == 0) {
+                      selectedSegmentOffset = horizonSpace;
+                    } else if (selectedSegmentIndex == 1) {
+                      selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
+                    }
+                } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     selectedSegmentOffset += totalLeftMargin;
-                  }
                 }
                 
                 CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom);
                
-                if (self.centerWhenNesseary) {
+                if (self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
                   rect.size.width = sectionWidth;
                 }
@@ -778,7 +787,32 @@
             CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
           
             CGFloat totalWidth = [self totalSegmentedControlWidth];
-            if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+            if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
+              CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+              CGFloat segmentOffset = horizonSpace;
+              
+              if (widthLeft < segmentOffset) { // The point's X is in the left of the most left segment after centerlized
+                return;
+              }
+              
+              if (widthLeft > horizonSpace + [self.segmentWidthsArray[0] floatValue] && widthLeft < 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue]) {
+                // The point's X is in center horizon space between the two segments
+                return;
+              }
+              
+              if (widthLeft > 2 * horizonSpace + totalWidth) { // The point's X is in the left of the most left segment after centerlized
+                return;
+              }
+              
+              segment = -1;
+              for (NSNumber *segmentWidth in self.segmentWidthsArray) {
+                ++segment;
+                if (widthLeft > segmentOffset && widthLeft < segmentOffset + [segmentWidth floatValue]) {
+                  break;
+                }
+                segmentOffset += [segmentWidth floatValue] + horizonSpace;
+              }
+            } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
               CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
               CGFloat segmentOffset = totalLeftMargin;
               
@@ -786,6 +820,10 @@
                 return;
               }
               
+              if (widthLeft > segmentOffset + totalWidth) { // The point's X is in the right of the most right segment after centerlized
+                return;
+              }
+
               segment = -1;
               for (NSNumber *segmentWidth in self.segmentWidthsArray) {
                 segmentOffset += [segmentWidth floatValue];
@@ -793,10 +831,6 @@
                 if (widthLeft < segmentOffset) {
                   break;
                 }
-              }
-              
-              if (widthLeft > segmentOffset) { // The point's X is in the right of the most right segment after centerlized
-                return;
               }
             } else {
               for (NSNumber *width in self.segmentWidthsArray) {

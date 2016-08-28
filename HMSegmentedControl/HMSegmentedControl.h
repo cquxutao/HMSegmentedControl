@@ -246,6 +246,13 @@ typedef enum {
  */
 @property (nonatomic) BOOL centerWhenNesseary;
 
+/**
+ When just has two segments. Make the horizon space between the two segments and margin to be equal.
+ Default is YES. Set to No if you don't want this effect.
+ */
+@property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
+
+
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;

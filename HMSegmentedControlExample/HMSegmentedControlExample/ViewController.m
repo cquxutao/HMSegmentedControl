@@ -84,9 +84,10 @@
     // Tying up the segmented control to a scroll view
     self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 50)];
 //    self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
-    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门22", @"发现22", @"关注22", @"热门33", @"发现33", @"关注33"];
+//    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门22", @"发现22", @"关注22", @"热门33", @"发现33", @"关注33"];
 //    self.segmentedControl4.sectionTitles = @[@"人气周榜", @"点赞周榜", @"粉丝贡献"];
 //    self.segmentedControl4.sectionTitles = @[@"热门发现"];
+    self.segmentedControl4.sectionTitles = @[@"直播回看", @"粉丝贡献榜"];
     self.segmentedControl4.selectedSegmentIndex = self.segmentedControl4.sectionTitles.count / 2;
     self.segmentedControl4.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0 blue:0 alpha:1],NSFontAttributeName : [UIFont systemFontOfSize:17]};
