@@ -776,14 +776,38 @@
         } else if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
             // To know which segment the user touched, we need to loop over the widths and substract it from the x position.
             CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
-            for (NSNumber *width in self.segmentWidthsArray) {
+          
+            CGFloat totalWidth = [self totalSegmentedControlWidth];
+            if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+              CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
+              CGFloat segmentOffset = totalLeftMargin;
+              
+              if (widthLeft < segmentOffset) { // The point's X is in the left of the most left segment after centerlized
+                return;
+              }
+              
+              segment = -1;
+              for (NSNumber *segmentWidth in self.segmentWidthsArray) {
+                segmentOffset += [segmentWidth floatValue];
+                ++segment;
+                if (widthLeft < segmentOffset) {
+                  break;
+                }
+              }
+              
+              if (widthLeft > segmentOffset) { // The point's X is in the right of the most right segment after centerlized
+                return;
+              }
+            } else {
+              for (NSNumber *width in self.segmentWidthsArray) {
                 widthLeft = widthLeft - [width floatValue];
                 
                 // When we don't have any width left to substract, we have the segment index.
                 if (widthLeft <= 0)
-                    break;
+                  break;
                 
                 segment++;
+              }
             }
         }
         
