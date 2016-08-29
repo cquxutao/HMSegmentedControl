@@ -82,7 +82,7 @@
     [self.view addSubview:segmentedControl3];
     
     // Tying up the segmented control to a scroll view
-    self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 50)];
+    self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 45.0)];
 //    self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
 //    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门22", @"发现22", @"关注22", @"热门33", @"发现33", @"关注33"];
 //    self.segmentedControl4.sectionTitles = @[@"人气周榜", @"点赞周榜", @"粉丝贡献"];
@@ -96,18 +96,24 @@
     self.segmentedControl4.selectionIndicatorColor = selectedColor;
     self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
     self.segmentedControl4.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
+    self.segmentedControl4.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(5.0, 0, 0, 0);
+    self.segmentedControl4.selectionIndicatorHeight = 2.0;
     self.segmentedControl4.segmentEdgeInset = UIEdgeInsetsMake(0, 10, 0, 10);
-    self.segmentedControl4.tag = 3;
     self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
+    self.segmentedControl4.shouldAnimateUserSelection = NO;
+  
+  
+    self.segmentedControl4.tag = 3;
+
   
     __weak typeof(self) weakSelf = self;
     [self.segmentedControl4 setIndexChangeBlock:^(NSInteger index) {
         [weakSelf.scrollView scrollRectToVisible:CGRectMake(viewWidth * index, 0, viewWidth, 200) animated:YES];
     }];
-    
+  
     [self.view addSubview:self.segmentedControl4];
     
-    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 310, viewWidth, 210)];
+    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 305, viewWidth, 210)];
     self.scrollView.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.scrollView.pagingEnabled = YES;
     self.scrollView.showsHorizontalScrollIndicator = NO;

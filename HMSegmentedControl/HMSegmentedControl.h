@@ -252,7 +252,6 @@ typedef enum {
  */
 @property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
 
-
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;

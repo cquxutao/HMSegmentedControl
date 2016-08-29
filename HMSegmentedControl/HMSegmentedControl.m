@@ -331,6 +331,10 @@
                 fullRect = CGRectMake(self.segmentWidth * idx, 0, self.segmentWidth, oldRect.size.height);
             } else if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
                 // When we are drawing dynamic widths, we need to loop the widths array to calculate the xOffset
+                if (self.type == HMSegmentedControlTypeText) {
+                  y = roundf((CGRectGetHeight(self.frame)) / 2 - stringHeight / 2);
+                }
+
                 CGFloat xOffset = 0;
                 NSInteger i = 0;
                 for (NSNumber *width in self.segmentWidthsArray) {
@@ -353,9 +357,6 @@
                     xOffset += totalLeftMargin;
                   }
                   
-                }
-                if (!self.enableSelectEffectForSingleSegment && [self sectionCount] == 1) {
-                    y = roundf((CGRectGetHeight(self.frame)) / 2 - stringHeight / 2 + self.selectionIndicatorHeight * locationUp);
                 }
               
                 CGFloat widthForIndex = [[self.segmentWidthsArray objectAtIndex:idx] floatValue];
@@ -610,10 +611,12 @@
     }
     
     CGFloat sectionWidth = 0.0f;
-    
+    CGFloat sectionHeight = 0.0f;
+
     if (self.type == HMSegmentedControlTypeText) {
-        CGFloat stringWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
-        sectionWidth = stringWidth;
+        CGSize textSize = [self measureTitleAtIndex:selectedSegmentIndex];
+        sectionWidth = textSize.width;
+        sectionHeight = textSize.height;
     } else if (self.type == HMSegmentedControlTypeImages) {
         UIImage *sectionImage = [self.sectionImages objectAtIndex:selectedSegmentIndex];
         CGFloat imageWidth = sectionImage.size.width;
@@ -664,7 +667,11 @@
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     selectedSegmentOffset += totalLeftMargin;
                 }
-                
+              
+                if (self.type == HMSegmentedControlTypeText) {
+                  indicatorYOffset = roundf((CGRectGetHeight(self.frame) - sectionHeight) / 2 + sectionHeight + self.selectionIndicatorEdgeInsets.top);
+                }
+              
                 CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom);
                
                 if (self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
