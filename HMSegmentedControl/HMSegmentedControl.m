@@ -219,12 +219,12 @@
     [self setNeedsLayout];
 }
 
-- (CGFloat)selectionIndicatorHeight {
-//    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
-//        return 0.0f;
-//    } else {
-        return _selectionIndicatorHeight;
-//    }
+- (void)setSelectionIndicatorLocation:(HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
+  _selectionIndicatorLocation = selectionIndicatorLocation;
+  
+  if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
+    self.selectionIndicatorHeight = 0.0f;
+  }
 }
 
 - (void)setSelectionIndicatorBoxOpacity:(CGFloat)selectionIndicatorBoxOpacity {
@@ -352,6 +352,10 @@
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     xOffset += totalLeftMargin;
                   }
+                  
+                }
+                if (!self.enableSelectEffectForSingleSegment && [self sectionCount] == 1) {
+                    y = roundf((CGRectGetHeight(self.frame)) / 2 - stringHeight / 2 + self.selectionIndicatorHeight * locationUp);
                 }
               
                 CGFloat widthForIndex = [[self.segmentWidthsArray objectAtIndex:idx] floatValue];
