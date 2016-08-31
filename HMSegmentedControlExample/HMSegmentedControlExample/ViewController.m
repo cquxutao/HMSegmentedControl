@@ -96,7 +96,7 @@
     self.segmentedControl4.selectionIndicatorColor = selectedColor;
     self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
     self.segmentedControl4.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
-    self.segmentedControl4.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(5.0, 0, 0, 0);
+    self.segmentedControl4.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(5.0, 0, 5.0, 0);
     self.segmentedControl4.selectionIndicatorHeight = 2.0;
     self.segmentedControl4.segmentEdgeInset = UIEdgeInsetsMake(0, 10, 0, 10);
     self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
@@ -108,7 +108,7 @@
   
     __weak typeof(self) weakSelf = self;
     [self.segmentedControl4 setIndexChangeBlock:^(NSInteger index) {
-        [weakSelf.scrollView scrollRectToVisible:CGRectMake(viewWidth * index, 0, viewWidth, 200) animated:YES];
+        [weakSelf.scrollView scrollRectToVisible:CGRectMake(viewWidth * index, 0, viewWidth, 200) animated:NO];
     }];
   
     [self.view addSubview:self.segmentedControl4];
@@ -132,9 +132,7 @@
         [self setApperanceForLabel:label];
         label.text = title;
         [self.scrollView addSubview:label];
-    }
-    
-    [self.scrollView.panGestureRecognizer addTarget:self action:@selector(scrollViewGestureRecognizerAction:)];
+    }    
 }
 
 - (void)setApperanceForLabel:(UILabel *)label {
@@ -154,34 +152,6 @@
 
 - (void)uisegmentedControlChangedValue:(UISegmentedControl *)segmentedControl {
     NSLog(@"Selected index %ld", (long)segmentedControl.selectedSegmentIndex);
-}
-
-- (void)scrollViewGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
-    //    UIGestureRecognizerStateBegan,      // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop
-    //    UIGestureRecognizerStateChanged,    // the recognizer has received touches recognized as a change to the gesture. the action method will be called at the next turn of the run loop
-    //    UIGestureRecognizerStateEnded,      // the recognizer has received touches recognized as the end of the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
-    //    UIGestureRecognizerStateCancelled,  // t
-//    
-//    CGPoint location = [gestureRecognizer locationInView:gestureRecognizer.view];
-//    //    NSLog(@"location:(%.4f, %.4f)", location.x, location.y);
-//    switch (gestureRecognizer.state) {
-//        case UIGestureRecognizerStateBegan: {
-//            self.beginLocation = location;
-//            NSLog(@"begin location:(%.4f, %.4f)", location.x, location.y);
-//            break;
-//        }
-//        case UIGestureRecognizerStateChanged: {
-//            CGPoint changeLocation = CGPointMake(location.x - self.beginLocation.x, location.y - self.beginLocation.y);
-//            NSLog(@"change location:(%.4f, %.4f)", changeLocation.x, changeLocation.y);
-//            break;
-//        }
-//        case UIGestureRecognizerStateEnded:
-//        case UIGestureRecognizerStateCancelled: {
-//            break;
-//        }
-//        default:
-//            break;
-//    }
 }
 
 #pragma mark - UIScrollViewDelegate

@@ -331,10 +331,6 @@
                 fullRect = CGRectMake(self.segmentWidth * idx, 0, self.segmentWidth, oldRect.size.height);
             } else if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
                 // When we are drawing dynamic widths, we need to loop the widths array to calculate the xOffset
-                if (self.type == HMSegmentedControlTypeText) {
-                  y = roundf((CGRectGetHeight(self.frame)) / 2 - stringHeight / 2);
-                }
-
                 CGFloat xOffset = 0;
                 NSInteger i = 0;
                 for (NSNumber *width in self.segmentWidthsArray) {
@@ -358,6 +354,8 @@
                   }
                   
                 }
+              
+                y = roundf((CGRectGetHeight(self.frame)) / 2 - stringHeight / 2);
               
                 CGFloat widthForIndex = [[self.segmentWidthsArray objectAtIndex:idx] floatValue];
                 rect = CGRectMake(xOffset, y, widthForIndex, stringHeight);
@@ -658,6 +656,7 @@
                     i++;
                 }
               
+              if (self.type == HMSegmentedControlTypeText) {
                 CGFloat totalWidth = [self totalSegmentedControlWidth];
                 if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
                     CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
@@ -672,17 +671,24 @@
                 }
               
                 if (self.type == HMSegmentedControlTypeText) {
-                  indicatorYOffset = roundf((CGRectGetHeight(self.frame) - sectionHeight) / 2 + sectionHeight + self.selectionIndicatorEdgeInsets.top);
+                  if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationDown) {
+                    indicatorYOffset = roundf((CGRectGetHeight(self.frame) - sectionHeight) / 2 + sectionHeight + self.selectionIndicatorEdgeInsets.top);
+                  } else if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationUp) {
+                    indicatorYOffset = roundf((CGRectGetHeight(self.frame) - sectionHeight) / 2 - self.selectionIndicatorEdgeInsets.bottom - self.selectionIndicatorHeight);
+                  }
                 }
               
-                CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight + self.selectionIndicatorEdgeInsets.bottom);
+                CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
                
-                if (self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
+                if ((self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
                   rect.size.width = sectionWidth;
                 }
                 
                 return rect;
+              } else {
+                return CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
+              }
             }
             
             return CGRectMake((self.segmentWidth + self.selectionIndicatorEdgeInsets.left) * selectedSegmentIndex, indicatorYOffset, self.segmentWidth - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
@@ -707,8 +713,34 @@
             
             i++;
         }
+      
+      if (self.type == HMSegmentedControlTypeText) {
+        CGFloat totalWidth = [self totalSegmentedControlWidth];
+        if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+          CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+          if (selectedSegmentIndex == 0) {
+            selectedSegmentOffset = horizonSpace;
+          } else if (selectedSegmentIndex == 1) {
+            selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
+          }
+        } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+          CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
+          selectedSegmentOffset += totalLeftMargin;
+        }
         
+        CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, CGRectGetHeight(self.frame));
+        
+        CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
+        
+        if (self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
+          rect.origin.x += (rect.size.width - sectionWidth) / 2;
+          rect.size.width = sectionWidth;
+        }
+        
+        return rect;
+      } else {
         return CGRectMake(selectedSegmentOffset, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue], CGRectGetHeight(self.frame));
+      }
     }
     return CGRectMake(self.segmentWidth * selectedSegmentIndex, 0, self.segmentWidth, CGRectGetHeight(self.frame));
 }
@@ -806,7 +838,7 @@
             CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
           
             CGFloat totalWidth = [self totalSegmentedControlWidth];
-            if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
+            if (self.type == HMSegmentedControlTypeText && self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
               CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
               CGFloat segmentOffset = horizonSpace;
               
@@ -831,7 +863,7 @@
                 }
                 segmentOffset += [segmentWidth floatValue] + horizonSpace;
               }
-            } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+            } else if (self.type == HMSegmentedControlTypeText && self.centerWhenNesseary && totalWidth < self.frame.size.width) {
               CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
               CGFloat segmentOffset = totalLeftMargin;
               

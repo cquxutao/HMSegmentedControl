@@ -221,6 +221,9 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
  */
 @property (nonatomic) BOOL shouldAnimateUserSelection;
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Following properties, just work for self.type == HMSegmentedControlTypeText && self.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic
+
 /**
  Defaul is NO. Set to YES if want the indicator animate when scroll the related scroll view.
  If set to YES. You must set the relatedScrollView property and call relatedScrollViewDidScroll: method when the releated UIScrollView scroll
