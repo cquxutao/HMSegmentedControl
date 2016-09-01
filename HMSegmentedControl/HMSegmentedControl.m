@@ -40,10 +40,8 @@
 @property (nonatomic) CGFloat normalGreen;
 @property (nonatomic) CGFloat normalBlue;
 @property (nonatomic) CGFloat noramlAlpha;
-
 @property (strong, nonatomic) NSMutableDictionary *titleLayerDictionary;
-
-@property (nonatomic) CGFloat lastContentOffset;
+@property (nonatomic, readonly) CGSize screenSize;
 
 @end
 
@@ -906,8 +904,10 @@
         
         if (segment != self.selectedSegmentIndex && segment < sectionsCount) {
             // Check if we have to do anything with the touch event
-            if (self.isTouchEnabled)
-                [self setSelectedSegmentIndex:segment animated:self.shouldAnimateUserSelection notify:YES];
+          if (self.isTouchEnabled) {
+            self.doesScrolledByUserPanGesture = NO;
+            [self setSelectedSegmentIndex:segment animated:self.shouldAnimateUserSelection notify:YES];
+          }
         }
     }
 }
@@ -967,7 +967,6 @@
 
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated {
     [self setSelectedSegmentIndex:index animated:animated notify:NO];
-    self.doesScrolledByUserPanGesture = NO;
 }
 
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated notify:(BOOL)notify {
@@ -1114,11 +1113,12 @@
 - (void)scrollViewPanGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateBegan: {
-            // Do nothing
+          NSLog(@"UIGestureRecognizerStateBegan");
+          self.doesScrolledByUserPanGesture = YES;
             break;
         }
         case UIGestureRecognizerStateChanged: {
-            self.doesScrolledByUserPanGesture = YES;
+            // Do nothing
             break;
         }
         case UIGestureRecognizerStateEnded:
@@ -1135,76 +1135,91 @@
 
 #pragma mark - The related UIScrollView did scroll
 
-- (void)relatedScrollViewDidScroll:(UIScrollView *)scrollView {
-    if (!self.shouldAnimateDurringUserScrollTheRelatedScrollView || !self.doesScrolledByUserPanGesture) {
-        return;
-    }
-    CGFloat contentOffsetX = scrollView.contentOffset.x;
-    CGSize screenSize = CGSizeMake(self.relatedPageWidth, [UIScreen mainScreen].bounds.size.height);//self.size;//[UIScreen mainScreen].bounds.size;
-    
-    // 实现本页标题颜色渐淡效果，下页渐现效果
-    NSInteger curPageIndex = (int)contentOffsetX / screenSize.width;//[Utils getScreenWidth];
-    
-    // 判断是向右还是向左
-    NSInteger destPageIndex = contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
-    if (destPageIndex < 0 || destPageIndex >= [self sectionCount]) {
-        return;
-    }
-    
-    CGRect currentPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
-    CGRect destinationPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
-    CGFloat percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
-    CGFloat nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
-    CGFloat nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
-    
-    if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
-        [self setArrowFrameWithFrame:CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height)];
-    } else {
-        self.selectionIndicatorStripLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
-        if (self.selectionStyle == HMSegmentedControlSelectionStyleBox) {
-            currentPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
-            destinationPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
-            percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
-            nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
-            nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
-            
-            self.selectionIndicatorBoxLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
-        }
-    }
-    
-    if (self.type == HMSegmentedControlTypeText || self.type == HMSegmentedControlTypeTextImages) {
-        // current title: selected color -> normal color
-        CGFloat depth = fabs(percentToDestination);
-        CGFloat r = (_selectedRed + (_normalRed - _selectedRed) * depth);
-        CGFloat g = (_selectedGreen + (_normalGreen - _selectedGreen) * depth);
-        CGFloat b = (_selectedBlue + (_normalBlue - _selectedBlue) * depth);
-        CGFloat a = (_selectedAlpha + (_noramlAlpha - _selectedAlpha) * depth);
-        NSString *currentTitle = self.sectionTitles[curPageIndex];
-        CATextLayer *currentTextLayer = self.titleLayerDictionary[currentTitle];
+- (CGSize)screenSize {
+  return CGSizeMake(self.relatedPageWidth, [UIScreen mainScreen].bounds.size.height);//self.size;//[UIScreen mainScreen].bounds.size;
+}
 
-        UIFont *font = self.selectedTitleTextAttributes[NSFontAttributeName] ? self.selectedTitleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
-        NSDictionary *titleAttrs = @{
-                                     NSFontAttributeName : font,
-                                     NSForegroundColorAttributeName : [UIColor colorWithRed:r green:g blue:b alpha:a]
-                                     };
-        currentTextLayer.string = [[NSAttributedString alloc] initWithString:currentTitle attributes:titleAttrs];
-        
-        // destination title: normal color -> selected color
-        r = (_normalRed + (_selectedRed - _normalRed) * depth);
-        g = (_normalGreen + (_selectedGreen - _normalGreen) * depth);
-        b = (_normalBlue + (_selectedBlue - _normalBlue) * depth);
-        a = (_noramlAlpha + (_selectedAlpha - _noramlAlpha) * depth);
-        NSString *destinationTitle = self.sectionTitles[destPageIndex];
-        CATextLayer *destinationTextLayer = self.titleLayerDictionary[destinationTitle];
-        font = self.titleTextAttributes[NSFontAttributeName] ? self.titleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
-        titleAttrs = @{
-                       NSFontAttributeName : font,
-                       NSForegroundColorAttributeName : [UIColor colorWithRed:r green:g blue:b alpha:a]
-                       };
-        destinationTextLayer.string = [[NSAttributedString alloc] initWithString:destinationTitle attributes:titleAttrs];
+- (void)relatedScrollViewDidScroll:(UIScrollView *)scrollView {
+  if (self.relatedScrollView != scrollView) {
+    return;
+  }
+  CGFloat contentOffsetX;
+  if ([scrollView class] == [UIScrollView class]) {
+    contentOffsetX = scrollView.contentOffset.x;
+  } else {
+    contentOffsetX = self.screenSize.width * (self.selectedSegmentIndex - 1) + scrollView.contentOffset.x;
+  }
+  [self relatedScrollViewDidScrollWithContentOffsetX:contentOffsetX];
+}
+
+- (void)relatedScrollViewDidScrollWithContentOffsetX:(CGFloat)contentOffsetX {
+  if (!self.shouldAnimateDurringUserScrollTheRelatedScrollView || !self.doesScrolledByUserPanGesture) {
+    return;
+  }
+  
+  CGSize screenSize = self.screenSize;
+  
+  // 实现本页标题颜色渐淡效果，下页渐现效果
+  NSInteger curPageIndex = (int)contentOffsetX / screenSize.width;//[Utils getScreenWidth];
+  
+  // 判断是向右还是向左
+  NSInteger destPageIndex = contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
+  if (destPageIndex < 0 || destPageIndex >= [self sectionCount]) {
+    return;
+  }
+  
+  CGRect currentPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
+  CGRect destinationPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
+  CGFloat percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
+  CGFloat nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
+  CGFloat nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
+  
+  if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
+    [self setArrowFrameWithFrame:CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height)];
+  } else {
+    self.selectionIndicatorStripLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
+    if (self.selectionStyle == HMSegmentedControlSelectionStyleBox) {
+      currentPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
+      destinationPageRect = [self frameForFillerSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
+      percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
+      nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
+      nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
+      
+      self.selectionIndicatorBoxLayer.frame = CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height);
     }
+  }
+  
+  if (self.type == HMSegmentedControlTypeText || self.type == HMSegmentedControlTypeTextImages) {
+    // current title: selected color -> normal color
+    CGFloat depth = fabs(percentToDestination);
+    CGFloat r = (_selectedRed + (_normalRed - _selectedRed) * depth);
+    CGFloat g = (_selectedGreen + (_normalGreen - _selectedGreen) * depth);
+    CGFloat b = (_selectedBlue + (_normalBlue - _selectedBlue) * depth);
+    CGFloat a = (_selectedAlpha + (_noramlAlpha - _selectedAlpha) * depth);
+    NSString *currentTitle = self.sectionTitles[curPageIndex];
+    CATextLayer *currentTextLayer = self.titleLayerDictionary[currentTitle];
     
-    _lastContentOffset = contentOffsetX;
+    UIFont *font = self.selectedTitleTextAttributes[NSFontAttributeName] ? self.selectedTitleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
+    NSDictionary *titleAttrs = @{
+                                 NSFontAttributeName : font,
+                                 NSForegroundColorAttributeName : [UIColor colorWithRed:r green:g blue:b alpha:a]
+                                 };
+    currentTextLayer.string = [[NSAttributedString alloc] initWithString:currentTitle attributes:titleAttrs];
+    
+    // destination title: normal color -> selected color
+    r = (_normalRed + (_selectedRed - _normalRed) * depth);
+    g = (_normalGreen + (_selectedGreen - _normalGreen) * depth);
+    b = (_normalBlue + (_selectedBlue - _normalBlue) * depth);
+    a = (_noramlAlpha + (_selectedAlpha - _noramlAlpha) * depth);
+    NSString *destinationTitle = self.sectionTitles[destPageIndex];
+    CATextLayer *destinationTextLayer = self.titleLayerDictionary[destinationTitle];
+    font = self.titleTextAttributes[NSFontAttributeName] ? self.titleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
+    titleAttrs = @{
+                   NSFontAttributeName : font,
+                   NSForegroundColorAttributeName : [UIColor colorWithRed:r green:g blue:b alpha:a]
+                   };
+    destinationTextLayer.string = [[NSAttributedString alloc] initWithString:destinationTitle attributes:titleAttrs];
+  }
 }
 
 #pragma mark - Helper

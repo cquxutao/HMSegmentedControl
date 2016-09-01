@@ -85,23 +85,20 @@
     self.segmentedControl4 = [[HMSegmentedControl alloc] initWithFrame:CGRectMake(0, 260, viewWidth, 45.0)];
 //    self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
 //    self.segmentedControl4.sectionTitles = @[@"热门", @"发现", @"关注", @"热门22", @"发现22", @"关注22", @"热门33", @"发现33", @"关注33"];
-//    self.segmentedControl4.sectionTitles = @[@"人气周榜", @"点赞周榜", @"粉丝贡献"];
+    self.segmentedControl4.sectionTitles = @[@"人气周榜", @"点赞周榜", @"粉丝贡献"];
 //    self.segmentedControl4.sectionTitles = @[@"热门发现"];
-    self.segmentedControl4.sectionTitles = @[@"直播回看", @"粉丝贡献榜"];
+//    self.segmentedControl4.sectionTitles = @[@"直播回看", @"粉丝贡献榜"];
     self.segmentedControl4.selectedSegmentIndex = self.segmentedControl4.sectionTitles.count / 2;
     self.segmentedControl4.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1];
     self.segmentedControl4.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0 blue:0 alpha:1],NSFontAttributeName : [UIFont systemFontOfSize:17]};
     UIColor *selectedColor = [UIColor colorWithRed:255. / 255. green:148. / 255. blue:49. / 255. alpha:1];
     self.segmentedControl4.selectedTitleTextAttributes = @{NSForegroundColorAttributeName : selectedColor,NSFontAttributeName : [UIFont systemFontOfSize:17]};
     self.segmentedControl4.selectionIndicatorColor = selectedColor;
-    self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleTextWidthStripe;
     self.segmentedControl4.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
     self.segmentedControl4.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(5.0, 0, 5.0, 0);
     self.segmentedControl4.selectionIndicatorHeight = 2.0;
     self.segmentedControl4.segmentEdgeInset = UIEdgeInsetsMake(0, 10, 0, 10);
     self.segmentedControl4.segmentWidthStyle = HMSegmentedControlSegmentWidthStyleDynamic;
-    self.segmentedControl4.shouldAnimateUserSelection = NO;
-  
   
     self.segmentedControl4.tag = 3;
 
@@ -121,10 +118,10 @@
     self.scrollView.delegate = self;
     [self.scrollView scrollRectToVisible:CGRectMake(viewWidth * self.segmentedControl4.selectedSegmentIndex, 0, viewWidth, 200) animated:NO];
     [self.view addSubview:self.scrollView];
-    
-    
-    self.segmentedControl4.shouldAnimateDurringUserScrollTheRelatedScrollView = YES;
     self.segmentedControl4.relatedScrollView = self.scrollView;
+
+  
+    self.segmentedControl4.shouldAnimateDurringUserScrollTheRelatedScrollView = YES;
     
     for (NSInteger index = 0; index < self.segmentedControl4.sectionTitles.count; ++index) {
         NSString *title = self.segmentedControl4.sectionTitles[index];
