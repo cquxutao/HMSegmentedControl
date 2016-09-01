@@ -1113,7 +1113,6 @@
 - (void)scrollViewPanGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateBegan: {
-          NSLog(@"UIGestureRecognizerStateBegan");
           self.doesScrolledByUserPanGesture = YES;
             break;
         }
