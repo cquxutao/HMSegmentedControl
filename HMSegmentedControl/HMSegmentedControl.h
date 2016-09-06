@@ -226,14 +226,9 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 
 /**
  Defaul is NO. Set to YES if want the indicator animate when scroll the related scroll view.
- If set to YES. You must set the relatedScrollView property and call relatedScrollViewDidScroll: method when the releated UIScrollView scroll
+ If set to YES. You must set the relatedScrollView property and call scrollViewDidScroll: method when the releated UIScrollView scroll
  */
-@property (nonatomic) BOOL shouldAnimateDurringUserScrollTheRelatedScrollView;
-
-/**
- The width of related page. Default is equal to the UIScreen's bound's width
- */
-@property (nonatomic, assign) CGFloat relatedPageWidth;
+@property(nonatomic) BOOL shouldAnimateDuringUserScrollTheRelatedScrollView;
 
 /**
  The related UIScrollView.
@@ -241,21 +236,16 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 @property (nonatomic, weak) UIScrollView *relatedScrollView;
 
 /**
- Default is NO. Set to YES if you want select effect for single segment
- */
-@property (nonatomic) BOOL enableSelectEffectForSingleSegment;
-
-/**
- When the total width of all section is smaller than the self.frame.size.width.
- Default is YES. Set to NO if you don't want this effect.
- */
-@property (nonatomic) BOOL centerWhenNesseary;
-
-/**
  When just has two segments. Make the horizon space between the two segments and margin to be equal.
  Default is YES. Set to No if you don't want this effect.
  */
 @property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
+
+/**
+ Call this when the related UIScrollView did scroll.
+ */
+- (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView;
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
@@ -263,10 +253,5 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated;
 - (void)setIndexChangeBlock:(IndexChangeBlock)indexChangeBlock;
 - (void)setTitleFormatter:(HMTitleFormatterBlock)titleFormatter;
-
-/**
- Call this when the related UIScrollView did scroll.
- */
-- (void)relatedScrollViewDidScroll:(UIScrollView *)scrollView;
 
 @end

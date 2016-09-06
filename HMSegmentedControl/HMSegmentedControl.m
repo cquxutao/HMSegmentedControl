@@ -15,6 +15,30 @@
 
 @interface HMSegmentedControl () {
     NSDictionary *_selectedTitleTextAttributes;
+    CGFloat _relatedPageWidth; // The width of related page. Default is equal to the UIScreen's bound's width
+    CGSize _screenSize;
+    BOOL _enableSelectEffectForSingleSegment; // Default is NO. Set to YES if you want select effect for single segment
+    /**
+     When the total width of all section is smaller than the self.frame.size.width.
+     Default is YES. Set to NO if you don't want this effect.
+     */
+    BOOL _centerWhenNecessary;
+    /**
+     A flag that indicate whether the releated scroll view scrolled by user.
+     If scrolled by user pan gesture: YES
+     If scrolled by tap the segment: NO
+     */
+    BOOL _doesScrolledByUserPanGesture;
+
+    NSMutableDictionary *_titleLayerDictionary;
+    CGFloat _selectedRed;
+    CGFloat _selectedGreen;
+    CGFloat _selectedBlue;
+    CGFloat _selectedAlpha;
+    CGFloat _normalRed;
+    CGFloat _normalGreen;
+    CGFloat _normalBlue;
+    CGFloat _noramlAlpha;
 }
 
 @property (nonatomic, strong) CALayer *selectionIndicatorStripLayer;
@@ -23,25 +47,6 @@
 @property (nonatomic, readwrite) CGFloat segmentWidth;
 @property (nonatomic, readwrite) NSArray *segmentWidthsArray;
 @property (nonatomic, strong) HMScrollView *scrollView;
-
-/**
- A flag that indicate whether the releated scroll view scrolled by user.
- If scrolled by user pan gesture: YES
- If scrolled by tap the segment: NO
- */
-@property (nonatomic, assign) BOOL doesScrolledByUserPanGesture;
-
-@property (nonatomic) CGFloat selectedRed;
-@property (nonatomic) CGFloat selectedGreen;
-@property (nonatomic) CGFloat selectedBlue;
-@property (nonatomic) CGFloat selectedAlpha;
-
-@property (nonatomic) CGFloat normalRed;
-@property (nonatomic) CGFloat normalGreen;
-@property (nonatomic) CGFloat normalBlue;
-@property (nonatomic) CGFloat noramlAlpha;
-@property (strong, nonatomic) NSMutableDictionary *titleLayerDictionary;
-@property (nonatomic, readonly) CGSize screenSize;
 
 @end
 
@@ -137,10 +142,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [self.relatedScrollView.panGestureRecognizer removeTarget:self action:@selector(scrollViewPanGestureRecognizerAction:)];
-}
-
 - (void)awakeFromNib {
     [super awakeFromNib];
     
@@ -186,11 +187,16 @@
     
     self.contentMode = UIViewContentModeRedraw;
     
-    _relatedPageWidth = [[self class] getScreenWidth];
-    
     _enableSelectEffectForSingleSegment = NO;
-    _centerWhenNesseary = YES;
+    _centerWhenNecessary = YES;
     _makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments = YES;
+    _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
+    _screenSize = CGSizeMake(_relatedPageWidth, UIScreen.mainScreen.bounds.size.height);
+    _titleLayerDictionary = @{}.mutableCopy;
+}
+
+- (void)dealloc {
+    [self.relatedScrollView.panGestureRecognizer removeTarget:self action:@selector(scrollViewPanGestureRecognizerAction:)];
 }
 
 - (void)layoutSubviews {
@@ -218,11 +224,11 @@
 }
 
 - (void)setSelectionIndicatorLocation:(HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
-  _selectionIndicatorLocation = selectionIndicatorLocation;
-  
-  if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
-    self.selectionIndicatorHeight = 0.0f;
-  }
+	_selectionIndicatorLocation = selectionIndicatorLocation;
+	
+	if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
+		self.selectionIndicatorHeight = 0.0f;
+	}
 }
 
 - (void)setSelectionIndicatorBoxOpacity:(CGFloat)selectionIndicatorBoxOpacity {
@@ -304,7 +310,7 @@
     
     // Remove all sublayers to avoid drawing images over existing ones
     self.scrollView.layer.sublayers = nil;
-    [self.titleLayerDictionary removeAllObjects];
+    [_titleLayerDictionary removeAllObjects];
     CGRect oldRect = rect;
     
     if (self.type == HMSegmentedControlTypeText) {
@@ -345,7 +351,7 @@
                     } else if (idx == 1) {
                       xOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
                     }
-                } else if (self.centerWhenNesseary) {
+                } else if (_centerWhenNecessary) {
                   if (totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     xOffset += totalLeftMargin;
@@ -385,8 +391,8 @@
             }
         
             [self addBackgroundAndBorderLayerWithRect:fullRect];
-            
-            [self.titleLayerDictionary setObject:titleLayer forKey:titleString];
+
+            _titleLayerDictionary[titleString] = titleLayer;
         }];
     } else if (self.type == HMSegmentedControlTypeImages) {
         [self.sectionImages enumerateObjectsUsingBlock:^(id iconImage, NSUInteger idx, BOOL *stop) {
@@ -492,13 +498,13 @@
             [self.scrollView.layer addSublayer:titleLayer];
 			
             [self addBackgroundAndBorderLayerWithRect:imageRect];
-            
-            [self.titleLayerDictionary setObject:titleLayer forKey:self.sectionTitles[idx]];
+
+        _titleLayerDictionary[self.sectionTitles[idx]] = titleLayer;
         }];
 	}
     
     // Add the selection indicators
-    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+    if ([self sectionCount] == 1 && !_enableSelectEffectForSingleSegment) {
       return;
     }
   
@@ -663,7 +669,7 @@
                     } else if (selectedSegmentIndex == 1) {
                       selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
                     }
-                } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+                } else if (_centerWhenNecessary && totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     selectedSegmentOffset += totalLeftMargin;
                 }
@@ -677,8 +683,8 @@
                 }
               
                 CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
-               
-                if ((self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
+
+                  if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
                   rect.size.width = sectionWidth;
                 }
@@ -721,7 +727,7 @@
           } else if (selectedSegmentIndex == 1) {
             selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
           }
-        } else if (self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+        } else if (_centerWhenNecessary && totalWidth < self.frame.size.width) {
           CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
           selectedSegmentOffset += totalLeftMargin;
         }
@@ -729,8 +735,8 @@
         CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, CGRectGetHeight(self.frame));
         
         CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
-        
-        if (self.centerWhenNesseary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
+
+          if (_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
           rect.origin.x += (rect.size.width - sectionWidth) / 2;
           rect.size.width = sectionWidth;
         }
@@ -861,7 +867,7 @@
                 }
                 segmentOffset += [segmentWidth floatValue] + horizonSpace;
               }
-            } else if (self.type == HMSegmentedControlTypeText && self.centerWhenNesseary && totalWidth < self.frame.size.width) {
+            } else if (self.type == HMSegmentedControlTypeText && _centerWhenNecessary && totalWidth < self.frame.size.width) {
               CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
               CGFloat segmentOffset = totalLeftMargin;
               
@@ -905,7 +911,7 @@
         if (segment != self.selectedSegmentIndex && segment < sectionsCount) {
             // Check if we have to do anything with the touch event
           if (self.isTouchEnabled) {
-            self.doesScrolledByUserPanGesture = NO;
+              _doesScrolledByUserPanGesture = NO;
             [self setSelectedSegmentIndex:segment animated:self.shouldAnimateUserSelection notify:YES];
           }
         }
@@ -1094,18 +1100,11 @@
 }
 
 - (NSDictionary *)selectedTitleTextAttributes {
-    if ([self sectionCount] == 1 && !self.enableSelectEffectForSingleSegment) {
+    if ([self sectionCount] == 1 && !_enableSelectEffectForSingleSegment) {
         return _titleTextAttributes;
     } else {
         return _selectedTitleTextAttributes;
     }
-}
-
-- (NSMutableDictionary *)titleLayerDictionary {
-    if (!_titleLayerDictionary) {
-        _titleLayerDictionary = [[NSMutableDictionary alloc] init];
-    }
-    return _titleLayerDictionary;
 }
 
 #pragma mark - GestureRecognizer Action
@@ -1113,7 +1112,7 @@
 - (void)scrollViewPanGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateBegan: {
-          self.doesScrolledByUserPanGesture = YES;
+            _doesScrolledByUserPanGesture = YES;
             break;
         }
         case UIGestureRecognizerStateChanged: {
@@ -1134,29 +1133,25 @@
 
 #pragma mark - The related UIScrollView did scroll
 
-- (CGSize)screenSize {
-  return CGSizeMake(self.relatedPageWidth, [UIScreen mainScreen].bounds.size.height);//self.size;//[UIScreen mainScreen].bounds.size;
-}
-
-- (void)relatedScrollViewDidScroll:(UIScrollView *)scrollView {
-  if (self.relatedScrollView != scrollView) {
+- (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView {
+    if (self.relatedScrollView != relatedScrollView) {
     return;
   }
   CGFloat contentOffsetX;
-  if ([scrollView class] == [UIScrollView class]) {
-    contentOffsetX = scrollView.contentOffset.x;
+    if ([relatedScrollView class] == [UIScrollView class]) {
+        contentOffsetX = relatedScrollView.contentOffset.x;
   } else {
-    contentOffsetX = self.screenSize.width * (self.selectedSegmentIndex - 1) + scrollView.contentOffset.x;
+        contentOffsetX = _screenSize.width * (self.selectedSegmentIndex - 1) + relatedScrollView.contentOffset.x;
   }
   [self relatedScrollViewDidScrollWithContentOffsetX:contentOffsetX];
 }
 
 - (void)relatedScrollViewDidScrollWithContentOffsetX:(CGFloat)contentOffsetX {
-  if (!self.shouldAnimateDurringUserScrollTheRelatedScrollView || !self.doesScrolledByUserPanGesture) {
+    if (!self.shouldAnimateDuringUserScrollTheRelatedScrollView || !_doesScrolledByUserPanGesture) {
     return;
   }
-  
-  CGSize screenSize = self.screenSize;
+
+    CGSize screenSize = _screenSize;
   
   // 实现本页标题颜色渐淡效果，下页渐现效果
   NSInteger curPageIndex = (int)contentOffsetX / screenSize.width;//[Utils getScreenWidth];
@@ -1196,7 +1191,7 @@
     CGFloat b = (_selectedBlue + (_normalBlue - _selectedBlue) * depth);
     CGFloat a = (_selectedAlpha + (_noramlAlpha - _selectedAlpha) * depth);
     NSString *currentTitle = self.sectionTitles[curPageIndex];
-    CATextLayer *currentTextLayer = self.titleLayerDictionary[currentTitle];
+      CATextLayer *currentTextLayer = _titleLayerDictionary[currentTitle];
     
     UIFont *font = self.selectedTitleTextAttributes[NSFontAttributeName] ? self.selectedTitleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
     NSDictionary *titleAttrs = @{
@@ -1211,7 +1206,7 @@
     b = (_normalBlue + (_selectedBlue - _normalBlue) * depth);
     a = (_noramlAlpha + (_selectedAlpha - _noramlAlpha) * depth);
     NSString *destinationTitle = self.sectionTitles[destPageIndex];
-    CATextLayer *destinationTextLayer = self.titleLayerDictionary[destinationTitle];
+      CATextLayer *destinationTextLayer = _titleLayerDictionary[destinationTitle];
     font = self.titleTextAttributes[NSFontAttributeName] ? self.titleTextAttributes[NSFontAttributeName] : [UIFont systemFontOfSize:19.0f];
     titleAttrs = @{
                    NSFontAttributeName : font,
@@ -1219,22 +1214,6 @@
                    };
     destinationTextLayer.string = [[NSAttributedString alloc] initWithString:destinationTitle attributes:titleAttrs];
   }
-}
-
-#pragma mark - Helper
-
-+ (CGFloat)getScreenWidth{
-    // modified by tencent:jiachunke(20150827)
-    /*
-     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
-     return fmin(screenSize.width, screenSize.height);
-     */
-    static CGFloat screenWidth = 0;
-    if (0 == screenWidth) {
-        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
-        screenWidth = fmin(screenSize.width, screenSize.height);
-    }
-    return screenWidth;
 }
 
 @end
