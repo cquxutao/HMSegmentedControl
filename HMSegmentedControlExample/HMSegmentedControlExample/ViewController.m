@@ -121,7 +121,7 @@
     self.segmentedControl4.relatedScrollView = self.scrollView;
 
   
-    self.segmentedControl4.shouldAnimateDurringUserScrollTheRelatedScrollView = YES;
+    self.segmentedControl4.shouldAnimateDuringUserScrollTheRelatedScrollView = YES;
     
     for (NSInteger index = 0; index < self.segmentedControl4.sectionTitles.count; ++index) {
         NSString *title = self.segmentedControl4.sectionTitles[index];
@@ -155,7 +155,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
 //    NSLog(@"offset: %.4f", scrollView.contentOffset.x);
-    [self.segmentedControl4 relatedScrollViewDidScroll:scrollView];
+    [self.segmentedControl4 scrollViewDidScroll:scrollView];
 }
 
 // called on start of dragging (may require some time and or distance to move)
