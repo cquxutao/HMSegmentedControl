@@ -502,7 +502,11 @@
         _titleLayerDictionary[self.sectionTitles[idx]] = titleLayer;
         }];
 	}
-    
+  
+    if ([self sectionCount] == 0) {
+      return;
+    }
+
     // Add the selection indicators
     if ([self sectionCount] == 1 && !_enableSelectEffectForSingleSegment) {
       return;
@@ -931,6 +935,9 @@
 }
 
 - (void)scrollToSelectedSegmentIndex:(BOOL)animated {
+    if ([self sectionCount] != self.segmentWidthsArray.count) {
+      [self updateSegmentsRects];
+    }
     CGRect rectForSelectedIndex;
     CGFloat selectedSegmentOffset = 0;
     if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleFixed) {
@@ -978,7 +985,9 @@
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated notify:(BOOL)notify {
     _selectedSegmentIndex = index;
     [self setNeedsDisplay];
-    
+    if ([self sectionCount] == 0) {
+      return;
+    }
     if (index == HMSegmentedControlNoSegment) {
         [self.selectionIndicatorArrowLayer removeFromSuperlayer];
         [self.selectionIndicatorStripLayer removeFromSuperlayer];
