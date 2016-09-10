@@ -1160,10 +1160,10 @@
     return;
   }
 
-    CGSize screenSize = _screenSize;
+  CGSize screenSize = _screenSize;
   
   // 实现本页标题颜色渐淡效果，下页渐现效果
-  NSInteger curPageIndex = (int)contentOffsetX / screenSize.width;//[Utils getScreenWidth];
+  NSInteger curPageIndex = self.selectedSegmentIndex;
   
   // 判断是向右还是向左
   NSInteger destPageIndex = contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
