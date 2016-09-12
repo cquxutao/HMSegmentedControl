@@ -687,11 +687,15 @@
                 }
               
                 CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
-
-                  if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
+                
+                if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
                   rect.size.width = sectionWidth;
                 }
+                
+                CGFloat adjustWidth = (rect.size.width - self.selectionIndicatorEdgeInsets.left - self.selectionIndicatorEdgeInsets.right);
+                rect.origin.x += self.selectionIndicatorEdgeInsets.left;
+                rect.size.width = adjustWidth;
                 
                 return rect;
               } else {
@@ -739,11 +743,15 @@
         CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, CGRectGetHeight(self.frame));
         
         CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
-
-          if (_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
+        
+        if (_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
           rect.origin.x += (rect.size.width - sectionWidth) / 2;
           rect.size.width = sectionWidth;
         }
+        
+        CGFloat adjustWidth = (rect.size.width - self.selectionIndicatorEdgeInsets.left - self.selectionIndicatorEdgeInsets.right);
+        rect.origin.x += self.selectionIndicatorEdgeInsets.left;
+        rect.size.width = adjustWidth;
         
         return rect;
       } else {
