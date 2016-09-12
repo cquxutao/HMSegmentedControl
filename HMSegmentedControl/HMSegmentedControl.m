@@ -686,7 +686,7 @@
                   }
                 }
               
-                CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, self.selectionIndicatorHeight);
+                CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right - self.selectionIndicatorEdgeInsets.left, self.selectionIndicatorHeight);
                 
                 if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
@@ -740,7 +740,7 @@
           selectedSegmentOffset += totalLeftMargin;
         }
         
-        CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right, CGRectGetHeight(self.frame));
+        CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, 0, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right - self.selectionIndicatorEdgeInsets.left, CGRectGetHeight(self.frame));
         
         CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
         
