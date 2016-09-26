@@ -11,6 +11,7 @@
 @class HMSegmentedControl;
 
 typedef void (^IndexChangeBlock)(NSInteger index);
+typedef void (^DoubleClickIndexBlock)(NSInteger index);
 typedef NSAttributedString *(^HMTitleFormatterBlock)(HMSegmentedControl *segmentedControl, NSString *title, NSUInteger index, BOOL selected);
 
 typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionStyle) {
@@ -240,6 +241,8 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
  Default is YES. Set to No if you don't want this effect.
  */
 @property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
+
+@property (nonatomic, copy) DoubleClickIndexBlock doubleClickIndexBlock;
 
 /**
  Call this when the related UIScrollView did scroll.

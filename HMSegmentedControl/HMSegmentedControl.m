@@ -39,6 +39,7 @@
     CGFloat _normalGreen;
     CGFloat _normalBlue;
     CGFloat _noramlAlpha;
+    UITapGestureRecognizer *_doubleTapGesture;
 }
 
 @property (nonatomic, strong) CALayer *selectionIndicatorStripLayer;
@@ -193,6 +194,10 @@
     _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
     _screenSize = CGSizeMake(_relatedPageWidth, UIScreen.mainScreen.bounds.size.height);
     _titleLayerDictionary = @{}.mutableCopy;
+  
+    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureRecognizerAction:)];
+    _doubleTapGesture.numberOfTapsRequired = 2;
+    [self addGestureRecognizer:_doubleTapGesture];
 }
 
 - (void)dealloc {
@@ -1144,6 +1149,95 @@
         default: {
             // Do nothing
             break;
+        }
+    }
+}
+
+- (void)tapGestureRecognizerAction:(UITapGestureRecognizer *)gestureRecognizer {
+    CGPoint touchLocation = [gestureRecognizer locationInView:self];
+    
+    CGRect enlargeRect =   CGRectMake(self.bounds.origin.x - self.enlargeEdgeInset.left,
+                                      self.bounds.origin.y - self.enlargeEdgeInset.top,
+                                      self.bounds.size.width + self.enlargeEdgeInset.left + self.enlargeEdgeInset.right,
+                                      self.bounds.size.height + self.enlargeEdgeInset.top + self.enlargeEdgeInset.bottom);
+    
+    if (CGRectContainsPoint(enlargeRect, touchLocation)) {
+        NSInteger segment = 0;
+        if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleFixed) {
+            segment = (touchLocation.x + self.scrollView.contentOffset.x) / self.segmentWidth;
+        } else if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
+            // To know which segment the user touched, we need to loop over the widths and substract it from the x position.
+            CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
+            
+            CGFloat totalWidth = [self totalSegmentedControlWidth];
+            if (self.type == HMSegmentedControlTypeText && self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
+                CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+                CGFloat segmentOffset = horizonSpace;
+                
+                if (widthLeft < segmentOffset) { // The point's X is in the left of the most left segment after centerlized
+                    return;
+                }
+                
+                if (widthLeft > horizonSpace + [self.segmentWidthsArray[0] floatValue] && widthLeft < 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue]) {
+                    // The point's X is in center horizon space between the two segments
+                    return;
+                }
+                
+                if (widthLeft > 2 * horizonSpace + totalWidth) { // The point's X is in the left of the most left segment after centerlized
+                    return;
+                }
+                
+                segment = -1;
+                for (NSNumber *segmentWidth in self.segmentWidthsArray) {
+                    ++segment;
+                    if (widthLeft > segmentOffset && widthLeft < segmentOffset + [segmentWidth floatValue]) {
+                        break;
+                    }
+                    segmentOffset += [segmentWidth floatValue] + horizonSpace;
+                }
+            } else if (self.type == HMSegmentedControlTypeText && _centerWhenNecessary && totalWidth < self.frame.size.width) {
+                CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
+                CGFloat segmentOffset = totalLeftMargin;
+                
+                if (widthLeft < segmentOffset) { // The point's X is in the left of the most left segment after centerlized
+                    return;
+                }
+                
+                if (widthLeft > segmentOffset + totalWidth) { // The point's X is in the right of the most right segment after centerlized
+                    return;
+                }
+                
+                segment = -1;
+                for (NSNumber *segmentWidth in self.segmentWidthsArray) {
+                    segmentOffset += [segmentWidth floatValue];
+                    ++segment;
+                    if (widthLeft < segmentOffset) {
+                        break;
+                    }
+                }
+            } else {
+                for (NSNumber *width in self.segmentWidthsArray) {
+                    widthLeft = widthLeft - [width floatValue];
+                    
+                    // When we don't have any width left to substract, we have the segment index.
+                    if (widthLeft <= 0)
+                        break;
+                    
+                    segment++;
+                }
+            }
+        }
+        
+        NSUInteger sectionsCount = 0;
+        
+        if (self.type == HMSegmentedControlTypeImages) {
+            sectionsCount = [self.sectionImages count];
+        } else if (self.type == HMSegmentedControlTypeTextImages || self.type == HMSegmentedControlTypeText) {
+            sectionsCount = [self.sectionTitles count];
+        }
+        
+        if (self.doubleClickIndexBlock) {
+            self.doubleClickIndexBlock(segment);
         }
     }
 }
