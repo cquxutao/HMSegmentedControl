@@ -257,4 +257,7 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 - (void)setIndexChangeBlock:(IndexChangeBlock)indexChangeBlock;
 - (void)setTitleFormatter:(HMTitleFormatterBlock)titleFormatter;
 
+- (void)updateSegmentsRects;
+- (CGFloat)totalSegmentedControlWidth;
+
 @end
