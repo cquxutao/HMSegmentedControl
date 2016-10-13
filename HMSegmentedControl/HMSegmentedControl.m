@@ -13,7 +13,7 @@
 @interface HMScrollView : UIScrollView
 @end
 
-@interface HMSegmentedControl () {
+@interface HMSegmentedControl () <UIScrollViewDelegate> {
     NSDictionary *_selectedTitleTextAttributes;
     CGFloat _relatedPageWidth; // The width of related page. Default is equal to the UIScreen's bound's width
     CGSize _screenSize;
@@ -48,6 +48,9 @@
 @property (nonatomic, readwrite) CGFloat segmentWidth;
 @property (nonatomic, readwrite) NSArray *segmentWidthsArray;
 @property (nonatomic, strong) HMScrollView *scrollView;
+
+@property (nonatomic, strong) UIImageView *leftMaskImageView;
+@property (nonatomic, strong) UIImageView *rightMaskImageView;
 
 @end
 
@@ -152,11 +155,12 @@
 
 - (void)commonInit {
     self.scrollView = [[HMScrollView alloc] init];
+    self.scrollView.delegate = self;
     self.scrollView.scrollsToTop = NO;
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self addSubview:self.scrollView];
-    
+  
     _backgroundColor = [UIColor whiteColor];
     self.opaque = NO;
     _selectionIndicatorColor = [UIColor colorWithRed:52.0f/255.0f green:181.0f/255.0f blue:229.0f/255.0f alpha:1.0f];
@@ -534,6 +538,14 @@
                 }
             }
         }
+    }
+    
+    // Show left or right mask image
+    // Just add for dynamic text type.
+    // TODO: support other type, other type need calculate the toal content size.
+    if (self.type == HMSegmentedControlTypeText && self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
+        [self updateLeftMaskImageFrame];
+        [self updateRightMaskImageFrame];
     }
 }
 
@@ -1001,6 +1013,12 @@
     if ([self sectionCount] == 0) {
       return;
     }
+  
+    // In init, force update mask image
+    if (_selectedSegmentIndex == 0) {
+      [self segmentDidScroll:self.scrollView];
+    }
+  
     if (index == HMSegmentedControlNoSegment) {
         [self.selectionIndicatorArrowLayer removeFromSuperlayer];
         [self.selectionIndicatorStripLayer removeFromSuperlayer];
@@ -1129,6 +1147,40 @@
     }
 }
 
+- (UIImageView *)leftMaskImageView {
+    if (!_leftMaskImageView) {
+        _leftMaskImageView = [[UIImageView alloc] initWithImage:self.leftMaskImage];
+        [self updateLeftMaskImageFrame];
+        [self addSubview:_leftMaskImageView];
+        _leftMaskImageView.hidden = YES;
+    }
+    return _leftMaskImageView;
+}
+
+- (void)updateLeftMaskImageFrame {
+    _leftMaskImageView.frame = CGRectMake(0,
+                                          (self.frame.size.height - _leftMaskImageView.image.size.height) / 2,
+                                          _leftMaskImageView.image.size.width,
+                                          _leftMaskImageView.image.size.height);
+}
+
+- (UIImageView *)rightMaskImageView {
+    if (!_rightMaskImageView) {
+        _rightMaskImageView = [[UIImageView alloc] initWithImage:self.rightMaskImage];
+        [self updateRightMaskImageFrame];
+        [self addSubview:_rightMaskImageView];
+        _rightMaskImageView.hidden = YES;
+    }
+    return _rightMaskImageView;
+}
+
+- (void)updateRightMaskImageFrame {
+    _rightMaskImageView.frame = CGRectMake(self.frame.size.width - _rightMaskImageView.image.size.width,
+                                          (self.frame.size.height - _rightMaskImageView.image.size.height) / 2,
+                                          _rightMaskImageView.image.size.width,
+                                          _rightMaskImageView.image.size.height);
+}
+
 #pragma mark - GestureRecognizer Action
 
 - (void)scrollViewPanGestureRecognizerAction:(UIPanGestureRecognizer *)gestureRecognizer {
@@ -1244,8 +1296,19 @@
 
 #pragma mark - The related UIScrollView did scroll
 
+- (void)segmentDidScroll:(UIScrollView *)scrollView {
+  if (self.type == HMSegmentedControlTypeText && self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
+    self.leftMaskImageView.hidden = scrollView.contentOffset.x < self.segmentEdgeInset.left;
+    self.rightMaskImageView.hidden = scrollView.frame.size.width + scrollView.contentOffset.x + self.segmentEdgeInset.right > [self totalSegmentedControlWidth];
+  }
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView {
-    if (self.relatedScrollView != relatedScrollView) {
+  if (self.scrollView == self.scrollView) {
+    [self segmentDidScroll:relatedScrollView];
+    return;
+  }
+  if (self.relatedScrollView != relatedScrollView) {
     return;
   }
   CGFloat contentOffsetX;

@@ -244,6 +244,10 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 
 @property (nonatomic, copy) DoubleClickIndexBlock doubleClickIndexBlock;
 
+// 当segment可滑动时左右的渐变icon
+@property (nonatomic, strong) UIImage *leftMaskImage;
+@property (nonatomic, strong) UIImage *rightMaskImage;
+
 /**
  Call this when the related UIScrollView did scroll.
  */
