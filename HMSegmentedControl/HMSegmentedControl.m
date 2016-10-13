@@ -1015,10 +1015,8 @@
     }
   
     // In init, force update mask image
-    if (_selectedSegmentIndex == 0) {
-      [self segmentDidScroll:self.scrollView];
-    }
-  
+    [self segmentDidScroll:self.scrollView];
+
     if (index == HMSegmentedControlNoSegment) {
         [self.selectionIndicatorArrowLayer removeFromSuperlayer];
         [self.selectionIndicatorStripLayer removeFromSuperlayer];
@@ -1304,7 +1302,7 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView {
-  if (self.scrollView == self.scrollView) {
+  if (self.scrollView == relatedScrollView) {
     [self segmentDidScroll:relatedScrollView];
     return;
   }
