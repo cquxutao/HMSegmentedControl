@@ -194,7 +194,7 @@
     
     _enableSelectEffectForSingleSegment = NO;
     _centerWhenNecessary = YES;
-    _makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments = YES;
+    _twoLayout = HMLayoutWithJustTwoSpaceEquality;
     _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
     _screenSize = CGSizeMake(_relatedPageWidth, UIScreen.mainScreen.bounds.size.height);
     _titleLayerDictionary = @{}.mutableCopy;
@@ -353,13 +353,23 @@
                     i++;
                 }
                 CGFloat totalWidth = [self totalSegmentedControlWidth];
-                if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                if (self.twoLayout > 0 && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                  if (self.twoLayout == HMLayoutWithJustTwoHalfAndCenter && self.segmentWidthsArray.count == 2) {
+                    CGFloat halfWidth =  self.frame.size.width / 2;
+                    if (idx == 0) {
+                      xOffset = (halfWidth - [self.segmentWidthsArray[idx] floatValue]) / 2;
+                    } else if (idx == 1) {
+                      xOffset = halfWidth + (halfWidth - [self.segmentWidthsArray[idx] floatValue]) / 2;
+                    }
+                  } else {
                     CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
                     if (idx == 0) {
                       xOffset = horizonSpace;
                     } else if (idx == 1) {
                       xOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
                     }
+                  }
+                  
                 } else if (_centerWhenNecessary) {
                   if (totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
@@ -683,13 +693,22 @@
               
               if (self.type == HMSegmentedControlTypeText) {
                 CGFloat totalWidth = [self totalSegmentedControlWidth];
-                if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                if (self.twoLayout != HMLayoutWithJustTwoDefault && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+                  if (self.twoLayout == HMLayoutWithJustTwoHalfAndCenter && self.segmentWidthsArray.count == 2) {
+                    CGFloat halfWidth =  self.frame.size.width / 2;
+                    if (selectedSegmentIndex == 0) {
+                      selectedSegmentOffset = (halfWidth - [self.segmentWidthsArray[selectedSegmentIndex] floatValue]) / 2;
+                    } else if (selectedSegmentIndex == 1) {
+                      selectedSegmentOffset = halfWidth + (halfWidth - [self.segmentWidthsArray[selectedSegmentIndex] floatValue]) / 2;
+                    }
+                  } else {
                     CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
                     if (selectedSegmentIndex == 0) {
                       selectedSegmentOffset = horizonSpace;
                     } else if (selectedSegmentIndex == 1) {
                       selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
                     }
+                  }
                 } else if (_centerWhenNecessary && totalWidth < self.frame.size.width) {
                     CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
                     selectedSegmentOffset += totalLeftMargin;
@@ -705,7 +724,7 @@
               
                 CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right - self.selectionIndicatorEdgeInsets.left, self.selectionIndicatorHeight);
                 
-                if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments)) {
+                if ((_centerWhenNecessary || self.twoLayout == HMLayoutWithJustTwoSpaceEquality)) {
                   rect.origin.x += (rect.size.width - sectionWidth) / 2;
                   rect.size.width = sectionWidth;
                 }
@@ -745,12 +764,21 @@
       
       if (self.type == HMSegmentedControlTypeText) {
         CGFloat totalWidth = [self totalSegmentedControlWidth];
-        if (self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
-          CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
-          if (selectedSegmentIndex == 0) {
-            selectedSegmentOffset = horizonSpace;
-          } else if (selectedSegmentIndex == 1) {
-            selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
+        if (self.twoLayout != HMLayoutWithJustTwoDefault && [self sectionCount] == 2 && totalWidth < self.frame.size.width) {
+          if (self.twoLayout == HMLayoutWithJustTwoHalfAndCenter && self.segmentWidthsArray.count == 2) {
+            CGFloat halfWidth =  self.frame.size.width / 2;
+            if (selectedSegmentIndex == 0) {
+              selectedSegmentOffset = (halfWidth - [self.segmentWidthsArray[selectedSegmentIndex] floatValue]) / 2;
+            } else if (selectedSegmentIndex == 1) {
+              selectedSegmentOffset = halfWidth + (halfWidth - [self.segmentWidthsArray[selectedSegmentIndex] floatValue]) / 2;
+            }
+          } else {
+            CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
+            if (selectedSegmentIndex == 0) {
+              selectedSegmentOffset = horizonSpace;
+            } else if (selectedSegmentIndex == 1) {
+              selectedSegmentOffset = 2 * horizonSpace + [self.segmentWidthsArray[0] floatValue];
+            }
           }
         } else if (_centerWhenNecessary && totalWidth < self.frame.size.width) {
           CGFloat totalLeftMargin = (self.frame.size.width - totalWidth) / 2;
@@ -761,7 +789,7 @@
         
         CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
         
-        if (_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments) {
+        if (_centerWhenNecessary || self.twoLayout == HMLayoutWithJustTwoSpaceEquality) {
           rect.origin.x += (rect.size.width - sectionWidth) / 2;
           rect.size.width = sectionWidth;
         }
@@ -871,7 +899,7 @@
             CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
           
             CGFloat totalWidth = [self totalSegmentedControlWidth];
-            if (self.type == HMSegmentedControlTypeText && self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
+            if (self.type == HMSegmentedControlTypeText && self.twoLayout == HMLayoutWithJustTwoSpaceEquality && [self sectionCount] == 2) {
               CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
               CGFloat segmentOffset = horizonSpace;
               
@@ -1220,7 +1248,7 @@
             CGFloat widthLeft = (touchLocation.x + self.scrollView.contentOffset.x);
             
             CGFloat totalWidth = [self totalSegmentedControlWidth];
-            if (self.type == HMSegmentedControlTypeText && self.makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments && [self sectionCount] == 2) {
+            if (self.type == HMSegmentedControlTypeText && self.twoLayout == HMLayoutWithJustTwoSpaceEquality && [self sectionCount] == 2) {
                 CGFloat horizonSpace = (self.frame.size.width - totalWidth) / 3;
                 CGFloat segmentOffset = horizonSpace;
                 
@@ -1306,9 +1334,10 @@
     [self segmentDidScroll:relatedScrollView];
     return;
   }
-  if (self.relatedScrollView != relatedScrollView) {
-    return;
-  }
+    if (!self.relatedScrollView) {
+        self.relatedScrollView = relatedScrollView;
+    }
+
   CGFloat contentOffsetX;
     if ([relatedScrollView class] == [UIScrollView class]) {
         contentOffsetX = relatedScrollView.contentOffset.x;

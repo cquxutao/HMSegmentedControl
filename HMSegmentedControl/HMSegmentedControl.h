@@ -50,6 +50,12 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 	HMSegmentedControlTypeTextImages
 };
 
+typedef NS_ENUM(NSInteger, HMLayoutWithJustTwo) {
+  HMLayoutWithJustTwoDefault = 0, // 默认
+  HMLayoutWithJustTwoSpaceEquality = 1, // 三个间隙相等
+  HMLayoutWithJustTwoHalfAndCenter = 2 // 先均分为两个segment, 再文字居中
+};
+
 @interface HMSegmentedControl : UIControl
 
 @property (nonatomic, strong) NSArray *sectionTitles;
@@ -238,9 +244,9 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 
 /**
  When just has two segments. Make the horizon space between the two segments and margin to be equal.
- Default is YES. Set to No if you don't want this effect.
+ Default is HMLayoutWithJustTwoSpaceEquality.
  */
-@property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
+@property (nonatomic) HMLayoutWithJustTwo twoLayout;
 
 @property (nonatomic, copy) DoubleClickIndexBlock doubleClickIndexBlock;
 
