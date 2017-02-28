@@ -24,7 +24,7 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionStyle) {
 typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionIndicatorLocation) {
     HMSegmentedControlSelectionIndicatorLocationUp,
     HMSegmentedControlSelectionIndicatorLocationDown,
-	HMSegmentedControlSelectionIndicatorLocationNone // No selection indicator
+    HMSegmentedControlSelectionIndicatorLocationNone // No selection indicator
 };
 
 typedef NS_ENUM(NSInteger, HMSegmentedControlSegmentWidthStyle) {
@@ -47,7 +47,7 @@ enum {
 typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
     HMSegmentedControlTypeText,
     HMSegmentedControlTypeImages,
-	HMSegmentedControlTypeTextImages
+    HMSegmentedControlTypeTextImages
 };
 
 @interface HMSegmentedControl : UIControl
@@ -202,9 +202,9 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
  When HMSegmentedControlSelectionIndicatorLocationDown is selected, top edge insets are not used
  
  Defaults are top: 0.0f
-             left: 0.0f
-           bottom: 0.0f
-            right: 0.0f
+ left: 0.0f
+ bottom: 0.0f
+ right: 0.0f
  */
 @property (nonatomic, readwrite) UIEdgeInsets selectionIndicatorEdgeInsets;
 
@@ -237,10 +237,11 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 @property (nonatomic, weak) UIScrollView *relatedScrollView;
 
 /**
- When just has two segments. Make the horizon space between the two segments and margin to be equal.
- Default is YES. Set to No if you don't want this effect.
+ If set to YES, and the total width of the segments < self.frame.size.width,
+ Make the horizon space between the segments and margin to be equal.
+ Default is NO.
  */
-@property (nonatomic) BOOL makeHorizonSpaceEqualEqualityWhenJustHasTwoSegments;
+@property (nonatomic) BOOL makeHorizonSpaceEqualEqualityIfPossible;
 
 @property (nonatomic, copy) DoubleClickIndexBlock doubleClickIndexBlock;
 
