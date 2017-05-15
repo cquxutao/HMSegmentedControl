@@ -145,6 +145,13 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
  */
 @property (nonatomic, assign) HMSegmentedControlSelectionIndicatorLocation selectionIndicatorLocation;
 
+/**
+ Only meaningful when selectionStyle is HMSegmentedControlSelectionStyleTextWidthStripe or HMSegmentedControlSelectionStyleFullWidthStripe and type == HMSegmentedControlTypeText.
+ Indicate that the selection line will in the top or bottom border, If selectionIndicatorInEdgeBorder set to be true, the selectionIndicatorEdgeInsets property has no sense.
+ */
+@property (nonatomic) BOOL selectionIndicatorInEdgeBorder;
+
+
 /*
  Specifies the border type.
  

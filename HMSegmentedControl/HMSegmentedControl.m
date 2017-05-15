@@ -699,6 +699,14 @@
                         } else if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationUp) {
                             indicatorYOffset = roundf((CGRectGetHeight(self.frame) - sectionHeight) / 2 - self.selectionIndicatorEdgeInsets.bottom - self.selectionIndicatorHeight);
                         }
+                        
+                        if (self.selectionIndicatorInEdgeBorder) {
+                            if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationDown) {
+                                indicatorYOffset = roundf((CGRectGetHeight(self.frame) - self.selectionIndicatorHeight));
+                            } else if (self.selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationUp) {
+                                indicatorYOffset = 0;
+                            }
+                        }
                     }
                     
                     CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right - self.selectionIndicatorEdgeInsets.left, self.selectionIndicatorHeight);
