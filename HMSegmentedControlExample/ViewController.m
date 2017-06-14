@@ -115,6 +115,21 @@
   
     self.segmentedControl4.tag = 3;
 
+#if 1 // box with round corner
+    self.segmentedControl4.selectionStyle = HMSegmentedControlSelectionStyleBox;
+    self.segmentedControl4.selectedTitleTextAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor],NSFontAttributeName : [UIFont systemFontOfSize:17]};
+    self.segmentedControl4.selectionIndicatorBoxColor = selectedColor;
+    self.segmentedControl4.selectionIndicatorBoxOpacity = 1;
+    self.segmentedControl4.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationNone;
+    
+    // Following two set the box width
+    self.segmentedControl4.selectionIndicatorEdgeInsets = UIEdgeInsetsMake(5.0, -20, 5.0, -20);
+    self.segmentedControl4.segmentEdgeInset = UIEdgeInsetsMake(0, 20, 0, 20);
+    
+    self.segmentedControl4.roundSelectionBox = YES;
+    self.segmentedControl4.selectionBoxHeight = 36;
+    
+#endif
   
     __weak typeof(self) weakSelf = self;
     [self.segmentedControl4 setIndexChangeBlock:^(NSInteger index) {

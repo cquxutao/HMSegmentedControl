@@ -195,6 +195,10 @@
     _enableSelectEffectForSingleSegment = NO;
     _centerWhenNecessary = YES;
     _makeHorizonSpaceEqualEqualityIfPossible = NO;
+    self.selectionBoxCornerRadius = CGFLOAT_MIN;
+    self.roundSelectionBox = NO;
+    self.selectionBoxHeight = CGFLOAT_MIN;
+    
     _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
     _screenSize = CGSizeMake(_relatedPageWidth, UIScreen.mainScreen.bounds.size.height);
     _titleLayerDictionary = @{}.mutableCopy;
@@ -540,6 +544,10 @@
                 
                 if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && !self.selectionIndicatorBoxLayer.superlayer) {
                     self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
+                    if (self.roundSelectionBox) {
+                        self.selectionIndicatorBoxLayer.cornerRadius = self.selectionBoxCornerRadius > CGFLOAT_MIN ? self.selectionBoxCornerRadius : self.selectionIndicatorBoxLayer.frame.size.height / 2;
+                    }
+                    self.selectionIndicatorBoxLayer.masksToBounds = YES;
                     [self.scrollView.layer insertSublayer:self.selectionIndicatorBoxLayer atIndex:0];
                 }
             }
@@ -743,6 +751,31 @@
 }
 
 - (CGRect)frameForFillerSelectionIndicatorWithSelectedSegmentIndex:(NSInteger)selectedSegmentIndex {
+    CGRect retRect = [self _frameForFillerSelectionIndicatorWithSelectedSegmentIndex:selectedSegmentIndex];
+    
+    if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && self.selectionBoxHeight > CGFLOAT_MIN) {
+        CGFloat stringHeight = [self measureTitleAtIndex:self.selectedSegmentIndex].height;
+        UIImage *sectionImage = [self.sectionImages objectAtIndex:self.selectedSegmentIndex];
+        CGFloat imageHeight = sectionImage.size.height;
+        CGFloat sectionHeight = MAX(stringHeight, imageHeight);
+        
+        CGFloat boxHeight = self.selectionBoxHeight;
+        if (boxHeight > retRect.size.height) {
+            boxHeight = retRect.size.height;
+        }
+        if (boxHeight < sectionHeight) {
+            boxHeight = sectionHeight;
+        }
+        
+        retRect = CGRectMake(retRect.origin.x,
+                             retRect.origin.y + (retRect.size.height - boxHeight) / 2,
+                             retRect.size.width,
+                             boxHeight);
+    }
+    return retRect;
+}
+
+- (CGRect)_frameForFillerSelectionIndicatorWithSelectedSegmentIndex:(NSInteger)selectedSegmentIndex {
     if (self.segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic) {
         CGFloat selectedSegmentOffset = 0.0f;
         

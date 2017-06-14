@@ -269,6 +269,25 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 - (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+/**
+ Default is NO. Set to YES to make the selectin box has a round corner; This property just work when selectionStyle == HMSegmentedControlSelectionStyleBox.
+ */
+@property (nonatomic) BOOL roundSelectionBox;
+
+/**
+ Default is half of the box height. If you set a value bigger than the selection box heigh, it will be half of the selection box height;
+ This property just work when selectionStyle == HMSegmentedControlSelectionStyleBox && roundSelectionBox == YES.
+ */
+@property (nonatomic) CGFloat selectionBoxCornerRadius;
+/**
+ Default is equal to the segment's height.
+ If you set a value which is bigger than segment's height, it will be the segment's height;
+ If you set a value which is smaller than the text or image's height of the segment, it will be set to the text or image's height of the segment
+ This property just work when selectionStyle == HMSegmentedControlSelectionStyleBox.
+ */
+@property (nonatomic) CGFloat selectionBoxHeight;
+
 - (id)initWithSectionTitles:(NSArray<NSString *> *)sectiontitles;
 - (id)initWithSectionImages:(NSArray<UIImage *> *)sectionImages sectionSelectedImages:(NSArray<UIImage *> *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray<UIImage *> *)sectionImages sectionSelectedImages:(NSArray<UIImage *> *)sectionSelectedImages titlesForSections:(NSArray<NSString *> *)sectiontitles;
