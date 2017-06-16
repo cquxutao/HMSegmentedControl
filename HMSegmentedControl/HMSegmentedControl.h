@@ -269,6 +269,22 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 - (void)scrollViewDidScroll:(UIScrollView *)relatedScrollView;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ When the total width of all section is smaller than the self.frame.size.width.
+ Default is YES. Set to NO if you don't want this effect.
+ */
+@property (nonatomic) BOOL centerWhenNecessary;
+
+/**
+ Default is NO. Set to YES if you want select effect for single segment
+ */
+@property (nonatomic) BOOL enableSelectEffectForSingleSegment;
+/**
+ A flag that indicate whether the releated scroll view scrolled by user.
+ If scrolled by user pan gesture: YES
+ If scrolled by tap the segment: NO
+ */
+@property (nonatomic) BOOL doesScrolledByUserPanGesture;
 
 /**
  Default is NO. Set to YES to make the selectin box has a round corner; This property just work when selectionStyle == HMSegmentedControlSelectionStyleBox.
@@ -287,6 +303,13 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
  This property just work when selectionStyle == HMSegmentedControlSelectionStyleBox.
  */
 @property (nonatomic) CGFloat selectionBoxHeight;
+
+/**
+ Default is NO.
+ When the segment is the head or the tail, igonre the segmentEdgeInset's left or right value;
+ This property just work when type == HMSegmentedControlTypeText && segmentWidthStyle == HMSegmentedControlSegmentWidthStyleDynamic
+ */
+@property (nonatomic) BOOL ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset;
 
 - (id)initWithSectionTitles:(NSArray<NSString *> *)sectiontitles;
 - (id)initWithSectionImages:(NSArray<UIImage *> *)sectionImages sectionSelectedImages:(NSArray<UIImage *> *)sectionSelectedImages;

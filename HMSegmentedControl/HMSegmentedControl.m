@@ -17,18 +17,6 @@
     NSDictionary *_selectedTitleTextAttributes;
     CGFloat _relatedPageWidth; // The width of related page. Default is equal to the UIScreen's bound's width
     CGSize _screenSize;
-    BOOL _enableSelectEffectForSingleSegment; // Default is NO. Set to YES if you want select effect for single segment
-    /**
-     When the total width of all section is smaller than the self.frame.size.width.
-     Default is YES. Set to NO if you don't want this effect.
-     */
-    BOOL _centerWhenNecessary;
-    /**
-     A flag that indicate whether the releated scroll view scrolled by user.
-     If scrolled by user pan gesture: YES
-     If scrolled by tap the segment: NO
-     */
-    BOOL _doesScrolledByUserPanGesture;
     
     NSMutableDictionary *_titleLayerDictionary;
     CGFloat _selectedRed;
@@ -197,6 +185,7 @@
     _makeHorizonSpaceEqualEqualityIfPossible = NO;
     self.selectionBoxCornerRadius = CGFLOAT_MIN;
     self.roundSelectionBox = NO;
+    self.ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset = NO;
     self.selectionBoxHeight = CGFLOAT_MIN;
     
     _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
@@ -392,6 +381,14 @@
             CATextLayer *titleLayer = [CATextLayer layer];
             titleLayer.frame = rect;
             titleLayer.alignmentMode = kCAAlignmentCenter;
+            if (self.ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset) {
+                if (idx == 0) {
+                    titleLayer.alignmentMode = kCAAlignmentLeft;
+                }
+                if (idx == self.sectionTitles.count - 1) {
+                    titleLayer.alignmentMode = kCAAlignmentRight;
+                }
+            }
             if ([UIDevice currentDevice].systemVersion.floatValue < 10.0 ) {
                 titleLayer.truncationMode = kCATruncationEnd;
             }
@@ -726,14 +723,16 @@
                     
                     CGRect rect = CGRectMake(selectedSegmentOffset + self.selectionIndicatorEdgeInsets.left, indicatorYOffset, [[self.segmentWidthsArray objectAtIndex:selectedSegmentIndex] floatValue] - self.selectionIndicatorEdgeInsets.right - self.selectionIndicatorEdgeInsets.left, self.selectionIndicatorHeight);
                     
-                    if ((_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityIfPossible)) {
-                        rect.origin.x += (rect.size.width - sectionWidth) / 2;
-                        rect.size.width = sectionWidth;
-                    }
+                    rect.origin.x += (rect.size.width - sectionWidth) / 2;
+                    rect.size.width = sectionWidth;
                     
                     CGFloat adjustWidth = (rect.size.width - self.selectionIndicatorEdgeInsets.left - self.selectionIndicatorEdgeInsets.right);
                     rect.origin.x += self.selectionIndicatorEdgeInsets.left;
                     rect.size.width = adjustWidth;
+                    
+                    if (self.ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset && selectedSegmentIndex == 0) {
+                        rect.origin.x = 0;
+                    }
                     
                     return rect;
                 } else {
@@ -806,14 +805,16 @@
             
             CGFloat sectionWidth = [self measureTitleAtIndex:selectedSegmentIndex].width;
             
-            if (_centerWhenNecessary || self.makeHorizonSpaceEqualEqualityIfPossible) {
-                rect.origin.x += (rect.size.width - sectionWidth) / 2;
-                rect.size.width = sectionWidth;
-            }
+            rect.origin.x += (rect.size.width - sectionWidth) / 2;
+            rect.size.width = sectionWidth;
             
             CGFloat adjustWidth = (rect.size.width - self.selectionIndicatorEdgeInsets.left - self.selectionIndicatorEdgeInsets.right);
             rect.origin.x += self.selectionIndicatorEdgeInsets.left;
             rect.size.width = adjustWidth;
+            
+            if (self.ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset && selectedSegmentIndex == 0) {
+                rect.origin.x = 0;
+            }
             
             return rect;
         } else {
@@ -841,6 +842,14 @@
         
         [self.sectionTitles enumerateObjectsUsingBlock:^(id titleString, NSUInteger idx, BOOL *stop) {
             CGFloat stringWidth = [self measureTitleAtIndex:idx].width + self.segmentEdgeInset.left + self.segmentEdgeInset.right;
+            if (self.ignoreTheHeadAndTheTailLeftAndRightOfSegmentEdgeInset) {
+                if (idx == 0) {
+                    stringWidth -= self.segmentEdgeInset.left;
+                }
+                if (idx == self.sectionTitles.count - 1) {
+                    stringWidth -= self.segmentEdgeInset.right;
+                }
+            }
             [mutableSegmentWidths addObject:[NSNumber numberWithFloat:stringWidth]];
         }];
         self.segmentWidthsArray = [mutableSegmentWidths copy];
