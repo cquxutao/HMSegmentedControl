@@ -246,6 +246,11 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 @property(nonatomic) BOOL shouldAnimateDuringUserScrollTheRelatedScrollView;
 
 /**
+ The width of related page. Default is equal to the UIScreen's bound's width
+ */
+@property (nonatomic, assign) CGFloat relatedPageWidth;
+
+/**
  The related UIScrollView.
  */
 @property (nonatomic, weak) UIScrollView *relatedScrollView;

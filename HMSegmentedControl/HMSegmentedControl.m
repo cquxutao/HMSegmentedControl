@@ -211,6 +211,11 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
+    if (_relatedPageWidth == UIScreen.mainScreen.bounds.size.width || _relatedPageWidth == UIScreen.mainScreen.bounds.size.height) {
+        _relatedPageWidth = UIScreen.mainScreen.bounds.size.width;
+    }
+    _screenSize = CGSizeMake(_relatedPageWidth, UIScreen.mainScreen.bounds.size.height);
+    
     [self updateSegmentsRects];
 }
 
