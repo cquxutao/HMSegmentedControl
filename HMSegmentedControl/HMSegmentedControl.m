@@ -1063,8 +1063,20 @@
             self.selectionIndicatorStripLayer.actions = nil;
             self.selectionIndicatorBoxLayer.actions = nil;
             
+            if (self.beginAnimationBlock) {
+                self.beginAnimationBlock(self);
+            }
+            self.userInteractionEnabled = NO;
+            
             // Animate to new position
             [CATransaction begin];
+            [CATransaction setCompletionBlock:^{
+                if (self.finishAnimationBlock) {
+                    self.finishAnimationBlock(self);
+                }
+                self.userInteractionEnabled = YES;
+            }];
+            
             [CATransaction setAnimationDuration:0.15f];
             [CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
             [self setArrowFrame];
@@ -1309,35 +1321,46 @@
     }
     CGFloat contentOffsetX;
     if ([relatedScrollView class] == [UIScrollView class]) {
-        contentOffsetX = relatedScrollView.contentOffset.x;
+        //        contentOffsetX = relatedScrollView.contentOffset.x;
+        // TODO: normal scroll view
     } else {
-        contentOffsetX = _screenSize.width * (self.selectedSegmentIndex - 1) + relatedScrollView.contentOffset.x;
+        CGFloat contentSizeWidth = relatedScrollView.contentSize.width;
+        CGFloat onePageWidth = contentSizeWidth/3;
+        CGFloat offsetX = relatedScrollView.contentOffset.x;
+        NSInteger destPageIndex = self.selectedSegmentIndex + ((offsetX > onePageWidth)?1:((offsetX == onePageWidth)?0:-1));
+        CGFloat destOffsetX = (offsetX > onePageWidth)?(offsetX - onePageWidth * floorf(offsetX/onePageWidth)):(onePageWidth - offsetX);
+        
+        NSUInteger numberOfMenus = [self sectionCount];
+        if (self.selectedSegmentIndex >= numberOfMenus || destPageIndex >= numberOfMenus || destPageIndex < 0 || self.selectedSegmentIndex < 0) {
+            return;
+        }
+        contentOffsetX = destOffsetX;
+        //        contentOffsetX = _screenSize.width * (self.selectedSegmentIndex - 1) + relatedScrollView.contentOffset.x;
+        [self relatedScrollViewDidScrollWithContentOffsetX:contentOffsetX fromIndex:self.selectedSegmentIndex toIndex:destPageIndex];
     }
-    [self relatedScrollViewDidScrollWithContentOffsetX:contentOffsetX];
 }
 
-- (void)relatedScrollViewDidScrollWithContentOffsetX:(CGFloat)contentOffsetX {
+- (void)relatedScrollViewDidScrollWithContentOffsetX:(CGFloat)contentOffsetX fromIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex {
     if (!self.shouldAnimateDuringUserScrollTheRelatedScrollView || !_doesScrolledByUserPanGesture) {
         return;
     }
     
     CGSize screenSize = _screenSize;
-    
     // 实现本页标题颜色渐淡效果，下页渐现效果
-    NSInteger curPageIndex = self.selectedSegmentIndex;
+    NSInteger curPageIndex = fromIndex; //self.selectedSegmentIndex;
     
     // 判断是向右还是向左
-    NSInteger destPageIndex = contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
-    if (destPageIndex < 0 || destPageIndex >= [self sectionCount]) {
+    NSInteger destPageIndex = toIndex;// contentOffsetX > (screenSize.width * curPageIndex) ? curPageIndex + 1 : curPageIndex - 1;
+    if (destPageIndex < 0 || destPageIndex >= [self sectionCount] || destPageIndex == curPageIndex) {
         return;
     }
     
     CGRect currentPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:curPageIndex];
     CGRect destinationPageRect = [self frameForSelectionIndicatorWithSelectedSegmentIndex:destPageIndex];
-    CGFloat percentToDestination = (contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
-    CGFloat nowRectX = percentToDestination * fabs(destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
+    CGFloat percentToDestination = contentOffsetX/screenSize.width; //(contentOffsetX - (screenSize.width * curPageIndex)) / screenSize.width;
+    CGFloat nowRectX = percentToDestination * (destinationPageRect.origin.x - currentPageRect.origin.x) + currentPageRect.origin.x;
     CGFloat nowRectSizeWidth = fabs(percentToDestination) * (destinationPageRect.size.width - currentPageRect.size.width) + currentPageRect.size.width;
-    
+
     if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
         [self setArrowFrameWithFrame:CGRectMake(nowRectX, destinationPageRect.origin.y, nowRectSizeWidth, destinationPageRect.size.height)];
     } else {

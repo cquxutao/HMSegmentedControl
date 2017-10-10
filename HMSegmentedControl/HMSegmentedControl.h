@@ -12,6 +12,8 @@
 
 typedef void (^IndexChangeBlock)(NSInteger index);
 typedef void (^DoubleClickIndexBlock)(NSInteger index);
+typedef void (^WillBeginSelectAnimationBlock)(HMSegmentedControl *segment);
+typedef void (^DidFinishSelectAnimationBlock)(HMSegmentedControl *segment);
 typedef NSAttributedString *(^HMTitleFormatterBlock)(HMSegmentedControl *segmentedControl, NSString *title, NSUInteger index, BOOL selected);
 
 typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionStyle) {
@@ -267,6 +269,9 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
 // 当segment可滑动时左右的渐变icon
 @property (nonatomic, strong) UIImage *leftMaskImage;
 @property (nonatomic, strong) UIImage *rightMaskImage;
+
+@property (nonatomic, copy) WillBeginSelectAnimationBlock beginAnimationBlock;
+@property (nonatomic, copy) DidFinishSelectAnimationBlock finishAnimationBlock;
 
 /**
  Call this when the related UIScrollView did scroll.
